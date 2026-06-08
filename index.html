@@ -1849,32 +1849,32 @@
         <div id="t73CreatorDeepSeekSettings" class="t73-v167-creator-deepseek-card">
           <div class="t73-v167-creator-deepseek-head">
             <div>
-              <h3>🔍 DeepSeek API для AI-чата</h3>
-              <p>Вторая менюшка для ключа AI-помощника в разделе «Инструкция». Модераторы ключ не вводят — чат берёт общий ключ отсюда.</p>
+              <h3>⚙️ AI API для проверки и инструкции</h3>
+              <p>Один общий ключ используется для автопроверки отчётов и помощника в разделе «Инструкция». Модераторы ключ не вводят.</p>
             </div>
             <span class="t73-v167-creator-deepseek-pill" id="creatorDeepSeekModelPill">deepseek-v4-pro + thinking</span>
           </div>
 
           <div class="t73-v167-creator-deepseek-grid">
             <div class="admin-field">
-              <label>DeepSeek API key</label>
+              <label>AI API key</label>
               <input id="creatorDeepSeekApiKeyInput" class="support-input" type="password" placeholder="sk-..." autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" inputmode="text">
             </div>
             <div class="admin-field">
-              <label>Модель для чата</label>
+              <label>Режим работы</label>
               <select id="creatorDeepSeekModelSelect" class="support-input">
-                <option value="deepseek-v4-pro">DeepSeek V4 Pro — лучший ответ</option>
-                <option value="deepseek-v4-flash">DeepSeek V4 Flash — быстрее</option>
-                <option value="deepseek-reasoner">DeepSeek R1 Reasoner — совместимость</option>
+                <option value="deepseek-v4-pro">Точный режим</option>
+                <option value="deepseek-v4-flash">Быстрый режим</option>
+                <option value="deepseek-reasoner">Совместимый режим</option>
               </select>
             </div>
             <div class="admin-field">
-              <label>DeepSeek endpoint</label>
+              <label>API endpoint</label>
               <input id="creatorDeepSeekEndpointInput" class="support-input" type="text" value="https://api.deepseek.com/chat/completions" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
             </div>
             <label class="t73-v167-creator-deepseek-check">
               <input id="creatorDeepSeekThinkingToggle" type="checkbox" checked>
-              <span>Включить режим рассуждения / R1 thinking</span>
+              <span>Включить глубокий анализ</span>
             </label>
           </div>
 
@@ -1882,9 +1882,9 @@
             <button class="btn btn-secondary" type="button" id="creatorPasteDeepSeekKeyBtn">📋 Вставить ключ</button>
             <button class="btn btn-secondary" type="button" id="creatorToggleDeepSeekKeyBtn">👁 Показать</button>
             <button class="btn btn-secondary" type="button" id="creatorClearDeepSeekKeyBtn">🧹 Очистить</button>
-            <button class="btn btn-primary" type="button" id="creatorSaveDeepSeekKeyBtn">💾 Сохранить DeepSeek</button>
+            <button class="btn btn-primary" type="button" id="creatorSaveDeepSeekKeyBtn">💾 Сохранить API</button>
           </div>
-          <div id="creatorDeepSeekKeyStatus" class="t73-v167-creator-deepseek-status">Ключ нужен только для AI-чата в инструкции. Автопроверка отчётов может продолжать использовать Gemini.</div>
+          <div id="creatorDeepSeekKeyStatus" class="t73-v167-creator-deepseek-status">Ключ используется для автопроверки отчётов и помощника в инструкции.</div>
         </div>
 
         <div style="background: rgba(28, 10, 20, 0.6); padding: 1.5rem; border-radius: 16px; border: 1px solid rgba(255, 107, 136, 0.5); margin-bottom: 1.5rem;">
@@ -2474,11 +2474,11 @@
         <article class="t73-ai-chat-card" id="guide-ai-chat" aria-label="AI чат по правилам модерации">
           <div class="t73-ai-chat-head">
             <div>
-              <span class="t73-ai-chat-kicker">🔍 DeepSeek AI</span>
+              <span class="t73-ai-chat-kicker">AI-помощник</span>
               <h3>Чат с ИИ по правилам модерации</h3>
               <p>Пиши ситуацию своими словами — помощник подберёт пункт правил, наказание и объяснит логику решения.</p>
             </div>
-            <span class="t73-ai-chat-model">deepseek-v4-pro</span>
+            <span class="t73-ai-chat-model" style="display:none"></span>
           </div>
           <div class="t73-ai-chat-examples" aria-label="Быстрые вопросы">
             <button type="button" data-ai-example="Игрок рекламирует другой Discord сервер. Что выдать?">Реклама</button>
@@ -2496,7 +2496,7 @@
               <button class="btn btn-secondary" type="button" id="t73AiChatClearBtn">Очистить</button>
             </div>
           </div>
-          <div class="t73-ai-chat-status" id="t73AiChatStatus">Ключ DeepSeek берётся из панели создателя. Модераторам его вводить не нужно.</div>
+          <div class="t73-ai-chat-status" id="t73AiChatStatus">Ключ берётся из панели управления. Модераторам его вводить не нужно.</div>
         </article>
 
         <div class="t73-v152-guide-layout">
@@ -25608,8 +25608,8 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
 
 
 
-<!-- === T73 V154: Gemini auto report judge + instant XP grant === -->
-<style id="t73-v154-gemini-report-style">
+<!-- === CH89 V170: DeepSeek auto report judge + instant XP grant, model hidden in UI === -->
+<style id="ch89-v170-ai-report-style">
   #submitReportBtn,
   #submitReportBtnV16,
   #submitReportBtnV57,
@@ -25647,8 +25647,6 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
   }
   .t73-v154-ai-title { display:flex; align-items:center; justify-content:space-between; gap:.75rem; flex-wrap:wrap; color:#fff; font-weight:950; }
   .t73-v154-ai-help { color: var(--color-text-muted); font-size:.86rem; line-height:1.45; }
-  .t73-v154-key-row { display:grid; grid-template-columns: minmax(0,1fr) auto; gap:.65rem; align-items:center; }
-  .t73-v154-key-row .support-input { margin:0 !important; }
   #reportGeminiFileInput { display:block !important; width:100% !important; }
   #reportGeminiPreview { display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:.7rem; }
   .t73-v154-file-card { position:relative; border-radius:14px; overflow:hidden; border:1px solid rgba(255,255,255,.14); background:rgba(0,0,0,.35); }
@@ -25661,7 +25659,7 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
   .t73-v154-result-row { display:flex; justify-content:space-between; gap:.75rem; align-items:flex-start; border-bottom:1px solid rgba(255,255,255,.08); padding-bottom:.45rem; }
   .t73-v154-result-row:last-child { border-bottom:0; padding-bottom:0; }
   .t73-v154-result-row b { color:#fff; }
-  .t73-v154-pill { display:inline-flex; align-items:center; gap:.35rem; padding:.28rem .6rem; border-radius:999px; border:1px solid rgba(127,232,160,.36); background:rgba(127,232,160,.1); color:#bfffd0; font-size:.78rem; font-weight:950; }
+  .t73-v154-pill, #t73V154GeminiBox .t73-v154-pill { display:none !important; }
   #reportAiLogBox { margin-top:.85rem; border-radius:16px; border:1px solid rgba(127,232,160,.26); background:rgba(0,0,0,.22); padding:.8rem; display:none; gap:.5rem; }
   #reportAiLogBox.t73-v162-show { display:grid; }
   .t73-v162-ai-log-head { display:flex; align-items:center; justify-content:space-between; gap:.7rem; color:#fff; font-weight:950; }
@@ -25672,47 +25670,30 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
   .t73-v162-ai-log-step.ok { color:#bfffd0; }
   .t73-v162-ai-log-step.bad { color:#ffd6df; }
   @media (max-width: 720px) {
-    .t73-v154-key-row { grid-template-columns: 1fr; }
     .t73-v154-result-row { display:grid; }
   }
 </style>
-<script id="t73-v154-gemini-report-script">
+<script id="ch89-v170-ai-report-script">
 (function(){
   'use strict';
-  if (window.__T73_V154_GEMINI_REPORTS__) return;
-  window.__T73_V154_GEMINI_REPORTS__ = true;
+  if (window.__CH89_V170_AI_REPORTS__) return;
+  window.__CH89_V170_AI_REPORTS__ = true;
 
-  var STORAGE_KEY = 't73_gemini_api_key_v154';
-  var MODEL = 'gemini-2.5-flash';
-  var API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/' + MODEL + ':generateContent';
+  var STORAGE_KEY = 't73_deepseek_ai_config_v167';
+  var DEFAULT_ENDPOINT = 'https://api.deepseek.com/chat/completions';
+  var DEFAULT_MODEL = 'deepseek-v4-pro';
   var files = [];
   var busy = false;
 
-  var SYSTEM_PROMPT = 'Ты — строгий, беспристрастный и внимательный AI-судья для системы управления модераторами.\n' +
-'Твоя задача: проверить отчет модератора, который состоит из скриншота-доказательства и заявленного времени работы.\n\n' +
-'ВНИМАНИЕ: Скриншот обычно делается из Discord, таймера, систем учета времени или панели управления.\n\n' +
-'ПРАВИЛА НАЧИСЛЕНИЯ XP (строго по фактическому времени на скриншоте):\n' +
-'- "Норма": от 10 до 29 минут включительно — 15 XP.\n' +
-'- "Перенорма": от 30 до 59 минут включительно — 30 XP.\n' +
-'- "Герой дня": от 60 минут и выше — 60 XP.\n' +
-'- Меньше 10 минут, отсутствие подтвержденного времени или фальшивый отчет — 0 XP (Отклонено).\n' +
-'- Пример: 1 час 1 минута = 61 минута, это "Герой дня" и 60 XP, а не отказ.\n\n' +
-'ИНСТРУКЦИИ ДЛЯ ПРОВЕРКИ:\n' +
-'1. Изучи приложенный скриншот. Найди на нем упоминания времени (часы, минуты), онлайн-сессии или длительности работы.\n' +
-'2. Сравни время, найденное на скриншоте, с \'заявленным временем\' пользователя. Если они совпадают или отличаются незначительно, используй фактическое время со скриншота.\n' +
-'3. Определи категорию и количество XP только по порогам 10 / 30 / 60 минут выше. Не используй старую норму 2 часа.\n' +
-'4. Предоставь структурированный ответ строго в JSON формате.\n\n' +
-'ФОРМАТ ОТВЕТА (СТРОГО JSON, без markdown):\n' +
-'{\n' +
-'  "status": "Одобрено" | "Отклонено",\n' +
-'  "verifiedTime": "Время, найденное на скриншоте (например, \'4 часа 15 минут\')",\n' +
-'  "category": "Норма" | "Перенорма" | "Герой дня" | "Не выполнено",\n' +
-'  "xp": 15 | 30 | 60 | 0,\n' +
-'  "reason": "Детально объясни свое решение. Если отклоняешь - укажи почему."\n' +
-'}';
+  var SYSTEM_PROMPT = 'Ты — строгий и внимательный проверяющий отчётов модераторов. ' +
+'Проверь отчёт по скриншоту и заявленному времени. Отвечай только JSON без markdown. ' +
+'Начисление XP строго по фактическому времени на скриншоте: от 10 до 29 минут включительно — 15 XP и категория "Норма"; от 30 до 59 минут — 30 XP и категория "Перенорма"; от 60 минут и выше — 60 XP и категория "Герой дня"; меньше 10 минут, отсутствие подтверждённого времени, нечитаемый или фальшивый отчёт — 0 XP и категория "Не выполнено". ' +
+'Если заявленное время и скриншот немного отличаются, используй фактическое время со скриншота. ' +
+'Формат ответа строго такой: {"status":"Одобрено" или "Отклонено","verifiedTime":"найденное время","category":"Норма" или "Перенорма" или "Герой дня" или "Не выполнено","xp":15 или 30 или 60 или 0,"reason":"короткая причина"}';
 
   function $(id){ return document.getElementById(id); }
   function esc(value){ return String(value == null ? '' : value).replace(/[&<>"']/g, function(ch){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]; }); }
+  function scrub(value){ return String(value == null ? '' : value).replace(/Gemini|gemini[-\w.]*|DeepSeek|deepseek[-\w.]*/gi, 'AI').replace(/модель\s*[:\-]?\s*[^\s,.]+/gi, 'сервис').trim(); }
   function client(){
     try { if (typeof supa !== 'undefined' && supa && typeof supa.from === 'function') return supa; } catch(e) {}
     if (window.supa && typeof window.supa.from === 'function') return window.supa;
@@ -25732,85 +25713,56 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
   function nicknameFromUser(user){
     return String(($('reportNickInput') && $('reportNickInput').value) || window.currentNickname || (user && user.user_metadata && (user.user_metadata.nickname || user.user_metadata.name)) || (user && user.email) || '').trim();
   }
-  function savedKey(){ return String(localStorage.getItem(STORAGE_KEY) || '').trim(); }
   function setStatus(text, ok, html){
-    var res = $('reportResultText');
-    if (!res) return;
+    var res = $('reportResultText'); if (!res) return;
     res.style.color = ok ? 'var(--color-success)' : 'var(--color-error)';
-    res.innerHTML = html || esc(text || '');
+    res.innerHTML = html || esc(scrub(text || ''));
   }
   function ensureAiLogBox(){
     var btn = $('submitReportBtnV154');
-    if (!$('reportAiLogBox') && btn) {
-      btn.insertAdjacentHTML('afterend', '<div id="reportAiLogBox"><div class="t73-v162-ai-log-head"><span>🧠 Лог AI-проверки</span><span id="reportAiLogBadge" class="t73-v162-ai-log-badge">готово</span></div><div id="reportAiLogSteps" class="t73-v162-ai-log-steps"></div></div>');
-    }
+    if (!$('reportAiLogBox') && btn) btn.insertAdjacentHTML('afterend', '<div id="reportAiLogBox"><div class="t73-v162-ai-log-head"><span>Лог проверки</span><span id="reportAiLogBadge" class="t73-v162-ai-log-badge">готово</span></div><div id="reportAiLogSteps" class="t73-v162-ai-log-steps"></div></div>');
   }
-  function setAiBadge(text){ var b=$('reportAiLogBadge'); if(b) b.textContent=text || 'готово'; }
+  function setAiBadge(text){ var b=$('reportAiLogBadge'); if(b) b.textContent=scrub(text || 'готово'); }
   function resetAiLog(){ ensureAiLogBox(); var box=$('reportAiLogBox'), steps=$('reportAiLogSteps'); if(box) box.classList.add('t73-v162-show'); if(steps) steps.innerHTML=''; setAiBadge('идёт проверка'); }
   function addAiStep(icon, text, type){
-    ensureAiLogBox();
-    var steps=$('reportAiLogSteps'); if(!steps) return;
-    var line=document.createElement('div');
-    line.className='t73-v162-ai-log-step' + (type ? ' ' + type : '');
-    line.innerHTML='<span>'+esc(icon || '•')+'</span><span>'+esc(text || '')+'</span>';
-    steps.appendChild(line);
+    ensureAiLogBox(); var steps=$('reportAiLogSteps'); if(!steps) return;
+    var line=document.createElement('div'); line.className='t73-v162-ai-log-step' + (type ? ' ' + type : '');
+    line.innerHTML='<span>'+esc(icon || '•')+'</span><span>'+esc(scrub(text || ''))+'</span>'; steps.appendChild(line);
   }
   function durationToMinutes(value){
     var s = String(value == null ? '' : value).toLowerCase().replace(/,/g, '.').replace(/\s+/g, ' ').trim();
     if (!s || /не\s*найден|неизвест|нет\s+врем|отсутств/i.test(s)) return null;
     var clock = s.match(/(?:^|[^\d])(\d{1,2})\s*:\s*(\d{2})(?:\s*:\s*(\d{2}))?(?:[^\d]|$)/);
-    if (clock) {
-      var h = Number(clock[1]), m = Number(clock[2]), sec = Number(clock[3] || 0);
-      if (isFinite(h) && isFinite(m) && h >= 0 && h <= 24 && m >= 0 && m < 60) return Math.round(h * 60 + m + (sec >= 30 ? 1 : 0));
-    }
-    var total = 0, found = false;
-    function add(re, multiplier){
-      var match = s.match(re);
-      if (!match) return;
-      var num = parseFloat(String(match[1]).replace(',', '.'));
-      if (!isFinite(num)) return;
-      total += num * multiplier;
-      found = true;
-    }
-    add(/(\d+(?:\.\d+)?)\s*(?:дн\.?|день|дня|дней|day|days)\b/i, 1440);
-    add(/(\d+(?:\.\d+)?)\s*(?:ч\.?|час|часа|часов|h|hr|hrs|hour|hours)\b/i, 60);
-    add(/(\d+(?:\.\d+)?)\s*(?:м\.?|мин\.?|минута|минуты|минут|min|mins|minute|minutes)\b/i, 1);
-    if (!found) return null;
-    return Math.round(total);
+    if (clock) { var h=Number(clock[1]), m=Number(clock[2]), sec=Number(clock[3]||0); if (isFinite(h)&&isFinite(m)&&h>=0&&h<=24&&m>=0&&m<60) return Math.round(h*60+m+(sec>=30?1:0)); }
+    var total=0, found=false;
+    function add(re, mult){ var match=s.match(re); if(!match) return; var num=parseFloat(String(match[1]).replace(',', '.')); if(!isFinite(num)) return; total += num*mult; found=true; }
+    add(/(\d+(?:\.\d+)?)\s*(?:дн\.?|день|дня|дней|day|days)\b/i,1440);
+    add(/(\d+(?:\.\d+)?)\s*(?:ч\.?|час|часа|часов|h|hr|hrs|hour|hours)\b/i,60);
+    add(/(\d+(?:\.\d+)?)\s*(?:м\.?|мин\.?|минута|минуты|минут|min|mins|minute|minutes)\b/i,1);
+    if(!found) return null; return Math.round(total);
   }
   function normByMinutes(minutes){
     if (minutes == null || !isFinite(minutes)) return null;
-    if (minutes >= 60) return { status:'Одобрено', category:'Герой дня', xp:60, threshold:'60 минут' };
-    if (minutes >= 30) return { status:'Одобрено', category:'Перенорма', xp:30, threshold:'30 минут' };
-    if (minutes >= 10) return { status:'Одобрено', category:'Норма', xp:15, threshold:'10 минут' };
-    return { status:'Отклонено', category:'Не выполнено', xp:0, threshold:'10 минут' };
+    if (minutes >= 60) return {status:'Одобрено', category:'Герой дня', xp:60, threshold:'60 минут'};
+    if (minutes >= 30) return {status:'Одобрено', category:'Перенорма', xp:30, threshold:'30 минут'};
+    if (minutes >= 10) return {status:'Одобрено', category:'Норма', xp:15, threshold:'10 минут'};
+    return {status:'Отклонено', category:'Не выполнено', xp:0, threshold:'10 минут'};
   }
-  function sanitizeGeminiResult(raw){
-    var result = raw || {};
-    var status = String(result.status || '').trim();
-    var category = String(result.category || '').trim();
-    var verifiedTime = String(result.verifiedTime || '').trim();
-    var reason = String(result.reason || '').trim();
-    var xp = Number(result.xp || 0);
-    var minutes = durationToMinutes(verifiedTime);
-    var norm = normByMinutes(minutes);
-
-    if (norm) {
-      var oldStatus = status;
-      var oldCategory = category;
-      status = norm.status;
-      category = norm.category;
-      xp = norm.xp;
-      if (xp > 0 && (oldStatus === 'Отклонено' || oldCategory !== category || !reason || /2\s*час|двух\s*час|минимальн/i.test(reason))) {
-        reason = 'Фактическое время на скриншоте (' + verifiedTime + ', примерно ' + minutes + ' мин.) достигает порога «' + category + '» (' + norm.threshold + '). Начислено ' + xp + ' XP.';
-      } else if (xp === 0) {
-        reason = 'Фактическое время на скриншоте (' + (verifiedTime || 'не найдено') + (minutes != null ? ', примерно ' + minutes + ' мин.' : '') + ') меньше минимальной нормы 10 минут. Начислено 0 XP.';
-      }
+  function sanitizeResult(raw){
+    var result=raw||{};
+    var status=String(result.status||'').trim();
+    var category=String(result.category||'').trim();
+    var verifiedTime=String(result.verifiedTime||'').trim();
+    var reason=scrub(String(result.reason||'').trim());
+    var xp=Number(result.xp||0);
+    var minutes=durationToMinutes(verifiedTime), norm=normByMinutes(minutes);
+    if(norm){
+      status=norm.status; category=norm.category; xp=norm.xp;
+      if (xp>0 && (!reason || /2\s*час|двух\s*час|минимальн/i.test(reason))) reason='Фактическое время на скриншоте (' + verifiedTime + ', примерно ' + minutes + ' мин.) достигает порога «' + category + '». Начислено ' + xp + ' XP.';
+      if (xp===0) reason='Фактическое время на скриншоте (' + (verifiedTime || 'не найдено') + (minutes != null ? ', примерно ' + minutes + ' мин.' : '') + ') меньше минимальной нормы 10 минут. Начислено 0 XP.';
     } else {
       if (!['Одобрено','Отклонено'].includes(status)) status = xp > 0 ? 'Одобрено' : 'Отклонено';
-      if (!['Норма','Перенорма','Герой дня','Не выполнено'].includes(category)) {
-        category = xp >= 60 ? 'Герой дня' : xp >= 30 ? 'Перенорма' : xp >= 15 ? 'Норма' : 'Не выполнено';
-      }
+      if (!['Норма','Перенорма','Герой дня','Не выполнено'].includes(category)) category = xp >= 60 ? 'Герой дня' : xp >= 30 ? 'Перенорма' : xp >= 15 ? 'Норма' : 'Не выполнено';
       if (status === 'Отклонено') xp = 0;
       if (category === 'Норма') xp = 15;
       if (category === 'Перенорма') xp = 30;
@@ -25818,195 +25770,92 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
       if (category === 'Не выполнено') xp = 0;
       if (![0,15,30,60].includes(xp)) xp = 0;
     }
-    return { status: status, verifiedTime: verifiedTime || 'не найдено', category: category, xp: xp, reason: reason || 'Gemini не вернул подробное объяснение.' };
+    return { status:status, verifiedTime:verifiedTime || 'не найдено', category:category, xp:xp, reason:reason || 'Проверка завершена без подробного объяснения.' };
   }
-
   function parseModelJson(text){
-    var s = String(text || '').trim();
-    if (!s) throw new Error('Gemini вернул пустой ответ.');
-    s = s.replace(/^```(?:json)?/i, '').replace(/```$/i, '').trim();
-    try { return JSON.parse(s); } catch(e) {
-      var m = s.match(/\{[\s\S]*\}/);
-      if (m) return JSON.parse(m[0]);
-      throw e;
-    }
+    var s=String(text||'').trim(); if(!s) throw new Error('Сервис проверки вернул пустой ответ.');
+    s=s.replace(/^```(?:json)?/i,'').replace(/```$/i,'').trim();
+    try { return JSON.parse(s); } catch(e){ var m=s.match(/\{[\s\S]*\}/); if(m) return JSON.parse(m[0]); throw e; }
   }
-  function splitDataUrl(dataUrl){
-    var m = String(dataUrl || '').match(/^data:([^;]+);base64,(.*)$/);
-    if (!m) return { mime:'image/jpeg', data:String(dataUrl || '').replace(/^data:image\/[^;]+;base64,/, '') };
-    return { mime:m[1] || 'image/jpeg', data:m[2] || '' };
-  }
-  function readAsDataURL(file){
-    return new Promise(function(resolve, reject){
-      var reader = new FileReader();
-      reader.onload = function(){ resolve(String(reader.result || '')); };
-      reader.onerror = function(){ reject(reader.error || new Error('Не удалось прочитать файл.')); };
-      reader.readAsDataURL(file);
-    });
-  }
-  function loadImage(dataUrl){
-    return new Promise(function(resolve, reject){
-      var img = new Image();
-      img.onload = function(){ resolve(img); };
-      img.onerror = function(){ reject(new Error('Не удалось открыть изображение.')); };
-      img.src = dataUrl;
-    });
-  }
-  async function compressForGemini(file){
-    var raw = await readAsDataURL(file);
-    var img = await loadImage(raw);
-    var width = img.naturalWidth || img.width;
-    var height = img.naturalHeight || img.height;
-    var maxSide = /iPhone|Android|Mobile/i.test(navigator.userAgent) ? 1100 : 1400;
-    var canvas = document.createElement('canvas');
-    function draw(side, quality){
-      var ratio = Math.min(1, side / Math.max(width, height));
-      canvas.width = Math.max(1, Math.round(width * ratio));
-      canvas.height = Math.max(1, Math.round(height * ratio));
-      var ctx = canvas.getContext('2d', { alpha:false });
-      ctx.fillStyle = '#111111';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      return canvas.toDataURL('image/jpeg', quality);
-    }
-    var out = draw(maxSide, .72);
-    while (out.length > 900000 && maxSide > 760) { maxSide -= 160; out = draw(maxSide, .58); }
-    while (out.length > 900000 && maxSide > 560) { maxSide -= 120; out = draw(maxSide, .46); }
-    return out;
+  function readAsDataURL(file){ return new Promise(function(resolve,reject){ var reader=new FileReader(); reader.onload=function(){ resolve(String(reader.result||'')); }; reader.onerror=function(){ reject(reader.error || new Error('Не удалось прочитать файл.')); }; reader.readAsDataURL(file); }); }
+  function loadImage(dataUrl){ return new Promise(function(resolve,reject){ var img=new Image(); img.onload=function(){ resolve(img); }; img.onerror=function(){ reject(new Error('Не удалось открыть изображение.')); }; img.src=dataUrl; }); }
+  async function compressImage(file){
+    var raw=await readAsDataURL(file), img=await loadImage(raw);
+    var width=img.naturalWidth||img.width, height=img.naturalHeight||img.height, maxSide=/iPhone|Android|Mobile/i.test(navigator.userAgent)?1100:1400;
+    var canvas=document.createElement('canvas');
+    function draw(side, quality){ var ratio=Math.min(1, side/Math.max(width,height)); canvas.width=Math.max(1,Math.round(width*ratio)); canvas.height=Math.max(1,Math.round(height*ratio)); var ctx=canvas.getContext('2d',{alpha:false}); ctx.fillStyle='#111'; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.drawImage(img,0,0,canvas.width,canvas.height); return canvas.toDataURL('image/jpeg', quality); }
+    var out=draw(maxSide,.72); while(out.length>900000 && maxSide>760){ maxSide-=160; out=draw(maxSide,.58); } while(out.length>900000 && maxSide>560){ maxSide-=120; out=draw(maxSide,.46); } return out;
   }
   function renderPreview(){
-    var box = $('reportGeminiPreview');
-    if (!box) return;
-    if (!files.length) { box.innerHTML = '<div class="t73-v154-ai-help" style="grid-column:1/-1;">Скриншот для AI-проверки ещё не выбран.</div>'; return; }
-    box.innerHTML = files.map(function(file, i){
-      var url = URL.createObjectURL(file);
-      return '<div class="t73-v154-file-card"><button class="t73-v154-remove" type="button" data-v154-remove="' + i + '">×</button><img src="' + url + '" alt="Скриншот" onload="try{URL.revokeObjectURL(this.src)}catch(e){}"><span>' + esc(file.name || ('screen_' + (i+1))) + '</span></div>';
-    }).join('');
-    box.querySelectorAll('[data-v154-remove]').forEach(function(btn){ btn.onclick = function(){ files.splice(Number(btn.dataset.v154Remove), 1); renderPreview(); }; });
+    var box=$('reportGeminiPreview'); if(!box) return;
+    if(!files.length){ box.innerHTML='<div class="t73-v154-ai-help" style="grid-column:1/-1;">Скриншот для проверки ещё не выбран.</div>'; return; }
+    box.innerHTML=files.map(function(file,i){ var url=URL.createObjectURL(file); return '<div class="t73-v154-file-card"><button class="t73-v154-remove" type="button" data-v154-remove="'+i+'">×</button><img src="'+url+'" alt="Скриншот" onload="try{URL.revokeObjectURL(this.src)}catch(e){}"><span>'+esc(file.name||('screen_'+(i+1)))+'</span></div>'; }).join('');
+    box.querySelectorAll('[data-v154-remove]').forEach(function(btn){ btn.onclick=function(){ files.splice(Number(btn.dataset.v154Remove),1); renderPreview(); }; });
   }
   function ensureUi(){
-    var form = $('reportFormArea') || $('mode-report');
-    if (!form) return;
-
-    ['submitReportBtn','submitReportBtnV16','submitReportBtnV57','submitReportBtnV62','reportFileInput','reportFileInputV62'].forEach(function(id){
-      var el = $(id); if (!el) return;
-      el.style.setProperty('display','none','important');
-      el.style.setProperty('visibility','hidden','important');
-      el.setAttribute('aria-hidden','true');
-    });
-
-    if (!$('reportClaimedTimeInput')) {
-      var work = $('reportWorkInput');
-      var date = $('reportDateInput');
-      var anchor = date || work || $('reportLinkInput') || form;
-      var html = '<div class="admin-field" id="reportClaimedTimeField"><label>Заявленное время работы:</label><input id="reportClaimedTimeInput" class="support-input" type="text" placeholder="Например: 10 минут / 30 минут / 1 час 1 минута"></div>';
-      if (anchor && anchor.closest && anchor.closest('.admin-field')) anchor.closest('.admin-field').insertAdjacentHTML('beforebegin', html);
-      else anchor.insertAdjacentHTML('beforebegin', html);
+    var form=$('reportFormArea') || $('mode-report'); if(!form) return;
+    ['submitReportBtn','submitReportBtnV16','submitReportBtnV57','submitReportBtnV62','reportFileInput','reportFileInputV62'].forEach(function(id){ var el=$(id); if(!el) return; el.style.setProperty('display','none','important'); el.style.setProperty('visibility','hidden','important'); el.setAttribute('aria-hidden','true'); });
+    if(!$('reportClaimedTimeInput')){
+      var work=$('reportWorkInput'), date=$('reportDateInput'), anchor=date||work||$('reportLinkInput')||form;
+      var html='<div class="admin-field" id="reportClaimedTimeField"><label>Заявленное время работы:</label><input id="reportClaimedTimeInput" class="support-input" type="text" placeholder="Например: 10 минут / 30 минут / 1 час 1 минута"></div>';
+      if(anchor && anchor.closest && anchor.closest('.admin-field')) anchor.closest('.admin-field').insertAdjacentHTML('beforebegin', html); else anchor.insertAdjacentHTML('beforebegin', html);
     }
-
-    if (!$('t73V154GeminiBox')) {
-      var place = $('reportFileBoxV62') || $('reportLinkInput')?.closest?.('.admin-field') || $('reportFileInput')?.closest?.('.admin-field') || form;
-      var boxHtml = '<div id="t73V154GeminiBox" class="t73-v154-ai-card">' +
-        '<div class="t73-v154-ai-title"><span>🤖 Автопроверка отчёта через Gemini</span><span class="t73-v154-pill">gemini-2.5-flash</span></div>' +
-        '<div class="t73-v154-ai-help">Загрузите скриншот с таймером/Discord/учётом времени. AI сверит его с заявленным временем, сам определит статус и сразу запишет XP в таблицу.</div>' +
-        '<div class="admin-field"><label>Скриншот для AI-проверки:</label><input id="reportGeminiFileInput" class="support-input" type="file" accept="image/*,.png,.jpg,.jpeg,.webp"><div id="reportGeminiPreview"></div></div>' +
+    if(!$('t73V154GeminiBox')){
+      var place=($('reportFileBoxV62') || ($('reportLinkInput') && $('reportLinkInput').closest && $('reportLinkInput').closest('.admin-field')) || ($('reportFileInput') && $('reportFileInput').closest && $('reportFileInput').closest('.admin-field')) || form);
+      var boxHtml='<div id="t73V154GeminiBox" class="t73-v154-ai-card">' +
+        '<div class="t73-v154-ai-title"><span>Автопроверка отчёта</span></div>' +
+        '<div class="t73-v154-ai-help">Загрузите скриншот с таймером/Discord/учётом времени. Система сверит его с заявленным временем, определит статус и запишет XP в таблицу.</div>' +
+        '<div class="admin-field"><label>Скриншот для проверки:</label><input id="reportGeminiFileInput" class="support-input" type="file" accept="image/*,.png,.jpg,.jpeg,.webp"><div id="reportGeminiPreview"></div></div>' +
         '</div>';
       place.insertAdjacentHTML('afterend', boxHtml);
+    } else {
+      var title=$('t73V154GeminiBox').querySelector('.t73-v154-ai-title span'); if(title) title.textContent='Автопроверка отчёта';
+      var help=$('t73V154GeminiBox').querySelector('.t73-v154-ai-help'); if(help) help.textContent='Загрузите скриншот с таймером/Discord/учётом времени. Система сверит его с заявленным временем, определит статус и запишет XP в таблицу.';
+      var pill=$('t73V154GeminiBox').querySelector('.t73-v154-pill'); if(pill) pill.remove();
     }
-
-    var oldBtn = $('submitReportBtnV62') || $('submitReportBtnV57') || $('submitReportBtnV16') || $('submitReportBtn') || $('t73V154GeminiBox') || form;
-    if (!$('submitReportBtnV154')) oldBtn.insertAdjacentHTML('afterend', '<button class="support-check-btn" type="button" id="submitReportBtnV154">🤖 Проверить через Gemini и зачесть XP</button>');
-
-    var keyInput = $('geminiApiKeyInput');
-    var saveBtn = $('saveGeminiKeyBtn');
-    if (keyInput && keyInput.dataset.v154Bound !== '1') {
-      keyInput.dataset.v154Bound = '1';
-      keyInput.addEventListener('change', function(){ localStorage.setItem(STORAGE_KEY, keyInput.value.trim()); });
-      keyInput.addEventListener('blur', function(){ localStorage.setItem(STORAGE_KEY, keyInput.value.trim()); });
+    var oldBtn=$('submitReportBtnV62')||$('submitReportBtnV57')||$('submitReportBtnV16')||$('submitReportBtn')||$('t73V154GeminiBox')||form;
+    if(!$('submitReportBtnV154')) oldBtn.insertAdjacentHTML('afterend','<button class="support-check-btn" type="button" id="submitReportBtnV154">Проверить отчёт и зачесть XP</button>');
+    var input=$('reportGeminiFileInput');
+    if(input && input.dataset.ch89v170Bound!=='1'){
+      input.dataset.ch89v170Bound='1';
+      input.onchange=function(){ var picked=Array.from(input.files||[]).filter(function(f){ return /^image\//i.test(String(f.type||'')); }); files=picked.slice(0,1); input.value=''; renderPreview(); };
     }
-    if (saveBtn && saveBtn.dataset.v154Bound !== '1') {
-      saveBtn.dataset.v154Bound = '1';
-      saveBtn.onclick = function(){ localStorage.setItem(STORAGE_KEY, (($('geminiApiKeyInput') || {}).value || '').trim()); setStatus('✅ Gemini API key сохранён в этом браузере.', true); };
-    }
-    var input = $('reportGeminiFileInput');
-    if (input && input.dataset.v154Bound !== '1') {
-      input.dataset.v154Bound = '1';
-      input.onchange = function(){
-        var picked = Array.from(input.files || []).filter(function(f){ return /^image\//i.test(String(f.type || '')); });
-        files = picked.slice(0, 1);
-        input.value = '';
-        renderPreview();
-      };
-    }
-    var btn = $('submitReportBtnV154');
-    if (btn && btn.dataset.v154Bound !== '1') {
-      btn.dataset.v154Bound = '1';
-      btn.addEventListener('click', submitWithGemini, true);
-    }
-    ensureAiLogBox();
-    renderPreview();
+    var btn=$('submitReportBtnV154');
+    if(btn){ btn.textContent='Проверить отчёт и зачесть XP'; btn.dataset.v154Bound='1'; }
+    ensureAiLogBox(); renderPreview();
   }
-  function responseSchema(){
-    return {
-      type: 'OBJECT',
-      properties: {
-        status: { type:'STRING', enum:['Одобрено','Отклонено'] },
-        verifiedTime: { type:'STRING' },
-        category: { type:'STRING', enum:['Норма','Перенорма','Герой дня','Не выполнено'] },
-        xp: { type:'INTEGER' },
-        reason: { type:'STRING' }
-      },
-      required: ['status','verifiedTime','category','xp','reason'],
-      propertyOrdering: ['status','verifiedTime','category','xp','reason']
-    };
+  function normalizeConfig(cfg){
+    cfg=cfg||{}; return { apiKey:String(cfg.apiKey||cfg.key||'').trim(), endpoint:String(cfg.endpoint||DEFAULT_ENDPOINT).trim()||DEFAULT_ENDPOINT, model:String(cfg.model||DEFAULT_MODEL).trim()||DEFAULT_MODEL, thinking: cfg.thinking === false ? false : true };
   }
-  async function callGeminiJudge(dataUrl, declaredTime, meta){
-    var key = '';
-    try {
-      if (window.T73_V156_GEMINI_KEY && typeof window.T73_V156_GEMINI_KEY.get === 'function') {
-        key = await window.T73_V156_GEMINI_KEY.get();
-      }
-    } catch(e) {}
-    if (!key) key = String(($('geminiApiKeyInput') && $('geminiApiKeyInput').value) || savedKey()).trim();
-    if (!key) throw new Error('Gemini API key не настроен. Создатель должен вставить общий ключ в панели создателя.');
-    localStorage.setItem(STORAGE_KEY, key);
-    var image = splitDataUrl(dataUrl);
-    var payload = {
-      contents: [{
-        role: 'user',
-        parts: [
-          { text: 'Проверь отчет модератора.\nЗаявленное время: ' + declaredTime + '\nНик: ' + (meta.nick || '') + '\nДата отчета: ' + (meta.date || '') + '\nКомментарий/работа: ' + (meta.work || '') + '\nВерни только JSON по указанной схеме.' },
-          { inline_data: { mime_type: image.mime, data: image.data } }
-        ]
-      }],
-      system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-      generationConfig: {
-        temperature: 0.05,
-        responseMimeType: 'application/json',
-        responseSchema: responseSchema()
-      }
-    };
-    var response = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
-      body: JSON.stringify(payload)
-    });
-    var data = await response.json().catch(function(){ return null; });
-    if (!response.ok) {
-      var msg = data && data.error && data.error.message ? data.error.message : ('HTTP ' + response.status);
-      throw new Error('Gemini API: ' + msg);
-    }
-    var text = data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text;
-    return sanitizeGeminiResult(parseModelJson(text));
+  async function getConfig(){
+    try { if(window.T73_V167_DEEPSEEK_CONFIG && typeof window.T73_V167_DEEPSEEK_CONFIG.get==='function'){ var shared=await window.T73_V167_DEEPSEEK_CONFIG.get(); if(shared && shared.apiKey) return normalizeConfig(shared); } } catch(e){}
+    try { return normalizeConfig(JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}')); } catch(e){ return normalizeConfig({}); }
+  }
+  async function callAiJudge(dataUrl, declaredTime, meta){
+    var cfg=await getConfig();
+    if(!cfg.apiKey) throw new Error('API ключ проверки не настроен. Сохраните ключ в панели управления.');
+    var userText='Проверь отчёт модератора. Заявленное время: '+declaredTime+'\nНик: '+(meta.nick||'')+'\nДата отчёта: '+(meta.date||'')+'\nКомментарий/работа: '+(meta.work||'')+'\nВерни только JSON по указанной схеме.';
+    var messages=[
+      { role:'system', content:SYSTEM_PROMPT },
+      { role:'user', content:[ { type:'text', text:userText }, { type:'image_url', image_url:{ url:dataUrl } } ] }
+    ];
+    var payload={ model:cfg.model, messages:messages, temperature:0.05, max_tokens:700, stream:false, response_format:{ type:'json_object' } };
+    if (/^deepseek-v4-/i.test(payload.model)) { payload.thinking = { type: cfg.thinking ? 'enabled' : 'disabled' }; if(cfg.thinking) payload.thinking.reasoning_effort='high'; }
+    var response=await fetch(cfg.endpoint,{ method:'POST', headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+cfg.apiKey }, body:JSON.stringify(payload) });
+    var data=await response.json().catch(function(){ return null; });
+    if(!response.ok){ var msg=data && data.error && (data.error.message || data.error) ? (data.error.message || data.error) : ('HTTP '+response.status); throw new Error('Сервис проверки: '+scrub(msg)); }
+    var choice=data && data.choices && data.choices[0];
+    var text=choice && choice.message && (choice.message.content || choice.message.reasoning_content);
+    return sanitizeResult(parseModelJson(text));
   }
   function resultHtml(verdict){
-    var cls = verdict.xp > 0 ? 'good' : 'bad';
-    return '<div class="t73-v154-result-card ' + cls + '">' +
-      '<div class="t73-v154-result-row"><span>Статус</span><b>' + esc(verdict.status) + '</b></div>' +
-      '<div class="t73-v154-result-row"><span>Время на скриншоте</span><b>' + esc(verdict.verifiedTime) + '</b></div>' +
-      '<div class="t73-v154-result-row"><span>Категория</span><b>' + esc(verdict.category) + '</b></div>' +
-      '<div class="t73-v154-result-row"><span>XP</span><b>' + esc(verdict.xp) + '</b></div>' +
-      '<div><b>Причина:</b><br>' + esc(verdict.reason) + '</div>' +
+    var cls=verdict.xp>0?'good':'bad';
+    return '<div class="t73-v154-result-card '+cls+'">' +
+      '<div class="t73-v154-result-row"><span>Статус</span><b>'+esc(verdict.status)+'</b></div>' +
+      '<div class="t73-v154-result-row"><span>Время на скриншоте</span><b>'+esc(verdict.verifiedTime)+'</b></div>' +
+      '<div class="t73-v154-result-row"><span>Категория</span><b>'+esc(verdict.category)+'</b></div>' +
+      '<div class="t73-v154-result-row"><span>XP</span><b>'+esc(verdict.xp)+'</b></div>' +
+      '<div><b>Причина:</b><br>'+esc(verdict.reason)+'</div>' +
     '</div>';
   }
   async function refreshAfterInsert(){
@@ -26016,113 +25865,53 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
     try { if (window.T73_V65_REAL_REPORT_XP && typeof window.T73_V65_REAL_REPORT_XP.refresh === 'function') setTimeout(function(){ window.T73_V65_REAL_REPORT_XP.refresh(); }, 360); } catch(e) {}
     try { if (typeof loadCreatorPanelData === 'function') setTimeout(loadCreatorPanelData, 480); } catch(e) {}
   }
-  async function submitWithGemini(event){
-    if (event) { event.preventDefault(); event.stopPropagation(); event.stopImmediatePropagation(); }
-    ensureUi();
-    if (busy) return false;
-    var c = client();
-    var user = await authUser();
-    var btn = $('submitReportBtnV154');
-    var nick = nicknameFromUser(user);
-    var work = String(($('reportWorkInput') && $('reportWorkInput').value) || '').trim();
-    var date = String(($('reportDateInput') && $('reportDateInput').value) || new Date().toISOString().slice(0,10)).trim();
-    var claimed = String(($('reportClaimedTimeInput') && $('reportClaimedTimeInput').value) || '').trim();
-    var link = String(($('reportLinkInput') && $('reportLinkInput').value) || '').trim();
-
-    if (!user || !user.email) { setStatus('Сначала войдите в аккаунт.', false); return false; }
-    if (!c) { setStatus('Supabase не загрузился. Обновите страницу и попробуйте ещё раз.', false); return false; }
-    if (!nick || !date || !claimed) { setStatus('Заполните ник, дату и заявленное время работы.', false); return false; }
-    if (!files.length) { setStatus('Для автоматической проверки нужен прямой скриншот. Ссылка не подходит для Gemini-проверки в браузере.', false); return false; }
-
-    busy = true;
-    resetAiLog();
-    addAiStep('📎', 'Скриншот выбран: ' + (files[0].name || 'image') + '.', 'ok');
-    addAiStep('🧾', 'Проверяю поля отчёта: ник, дата, заявленное время.', 'ok');
-    var oldText = btn ? btn.textContent : '';
-    if (btn) { btn.disabled = true; btn.textContent = '🤖 Gemini проверяет скриншот...'; }
-    setStatus('Сжимаю скриншот и отправляю на проверку Gemini...', true);
+  async function submitWithAi(event){
+    if(event){ event.preventDefault(); event.stopPropagation(); event.stopImmediatePropagation(); }
+    ensureUi(); if(busy) return false;
+    var c=client(), user=await authUser(), btn=$('submitReportBtnV154');
+    var nick=nicknameFromUser(user), work=String(($('reportWorkInput')&&$('reportWorkInput').value)||'').trim(), date=String(($('reportDateInput')&&$('reportDateInput').value)||new Date().toISOString().slice(0,10)).trim(), claimed=String(($('reportClaimedTimeInput')&&$('reportClaimedTimeInput').value)||'').trim(), link=String(($('reportLinkInput')&&$('reportLinkInput').value)||'').trim();
+    if(!user || !user.email){ setStatus('Сначала войдите в аккаунт.', false); return false; }
+    if(!c){ setStatus('Supabase не загрузился. Обновите страницу и попробуйте ещё раз.', false); return false; }
+    if(!nick || !date || !claimed){ setStatus('Заполните ник, дату и заявленное время работы.', false); return false; }
+    if(!files.length){ setStatus('Для автоматической проверки нужен прямой скриншот. Ссылка не подходит для проверки в браузере.', false); return false; }
+    busy=true; resetAiLog(); addAiStep('📎','Скриншот выбран: '+(files[0].name||'image')+'.','ok'); addAiStep('🧾','Проверяю поля отчёта: ник, дата, заявленное время.','ok');
+    var oldText=btn?btn.textContent:''; if(btn){ btn.disabled=true; btn.textContent='Проверяю скриншот...'; }
+    setStatus('Сжимаю скриншот и отправляю на проверку...', true);
     try {
-      addAiStep('🗜️', 'Сжимаю изображение, чтобы проверка не зависала и не грузила страницу.', 'warn');
-      var screenshot = await compressForGemini(files[0]);
-      addAiStep('🤖', 'Отправляю скриншот в Gemini. В лог не выводится base64/технический JSON.', 'warn');
-      setStatus('Gemini анализирует время на скриншоте...', true);
-      var verdict = await callGeminiJudge(screenshot, claimed, { nick:nick, date:date, work:work });
-      addAiStep('⏱️', 'Gemini нашёл время: ' + verdict.verifiedTime + '. Категория: ' + verdict.category + ', XP: ' + verdict.xp + '.', verdict.xp > 0 ? 'ok' : 'bad');
-      var finalStatus = verdict.xp > 0 ? verdict.category : 'Не засчитано';
-      var payload = {
-        version: 'v162_gemini_auto_report_compact',
-        nick: nick,
-        nickname: nick,
-        work: work,
-        comment: work,
-        date: date,
-        day: date,
-        declaredTime: claimed,
-        requestedTime: claimed,
-        gemini: verdict,
-        aiStatus: verdict.status,
-        verifiedTime: verdict.verifiedTime,
-        category: verdict.category,
-        reason: verdict.reason,
-        xp: verdict.xp,
-        proofName: files[0].name || 'gemini_screenshot.jpg',
-        proofStoredIn: 'row.link',
-        linkText: link,
-        userId: user.id,
-        email: user.email,
-        createdAt: new Date().toISOString()
-      };
-      addAiStep('💾', 'Записываю отчёт в базу: статус «' + finalStatus + '», XP: ' + Number(verdict.xp || 0) + '.', 'warn');
-      var ins = await c.from('reports').insert([{
-        id: 'rep_gemini_v162_' + Date.now() + '_' + Math.random().toString(16).slice(2),
-        email: user.email,
-        link: screenshot,
-        date: JSON.stringify(payload),
-        status: finalStatus,
-        xp: Number(verdict.xp || 0)
-      }]);
-      if (ins.error) throw ins.error;
-      addAiStep('✅', 'Отчёт сохранён. XP попадёт в баланс, потому что строка записана на email текущего пользователя.', verdict.xp > 0 ? 'ok' : 'bad');
+      addAiStep('🗜️','Сжимаю изображение, чтобы проверка не зависала и не грузила страницу.','warn');
+      var screenshot=await compressImage(files[0]);
+      addAiStep('🔎','Отправляю скриншот на проверку. Технические данные не выводятся в лог.','warn');
+      setStatus('Система анализирует время на скриншоте...', true);
+      var verdict=await callAiJudge(screenshot, claimed, {nick:nick,date:date,work:work});
+      addAiStep('⏱️','Найдено время: '+verdict.verifiedTime+'. Категория: '+verdict.category+', XP: '+verdict.xp+'.', verdict.xp>0?'ok':'bad');
+      var finalStatus=verdict.xp>0?verdict.category:'Не засчитано';
+      var payload={ version:'ch89_v170_ai_auto_report', nick:nick, nickname:nick, work:work, comment:work, date:date, day:date, declaredTime:claimed, requestedTime:claimed, ai:verdict, aiStatus:verdict.status, verifiedTime:verdict.verifiedTime, category:verdict.category, reason:verdict.reason, xp:verdict.xp, proofName:files[0].name||'report_screenshot.jpg', proofStoredIn:'row.link', linkText:link, userId:user.id, email:user.email, createdAt:new Date().toISOString() };
+      addAiStep('💾','Записываю отчёт в базу: статус «'+finalStatus+'», XP: '+Number(verdict.xp||0)+'.','warn');
+      var ins=await c.from('reports').insert([{ id:'rep_ai_v170_'+Date.now()+'_'+Math.random().toString(16).slice(2), email:user.email, link:screenshot, date:JSON.stringify(payload), status:finalStatus, xp:Number(verdict.xp||0) }]);
+      if(ins.error) throw ins.error;
+      addAiStep('✅','Отчёт сохранён. XP записан на аккаунт текущего пользователя.', verdict.xp>0?'ok':'bad');
       try { if (typeof loadReportXpForCurrentUser === 'function' && window.currentUser && window.state) window.state.reportXp = await loadReportXpForCurrentUser(); } catch(e) {}
       try { if (typeof updateShopStats === 'function') updateShopStats(); } catch(e) {}
       try { if (typeof updateModStats === 'function') updateModStats(); } catch(e) {}
       try { if (typeof updateProfileStats === 'function') updateProfileStats(); } catch(e) {}
-      setAiBadge(verdict.xp > 0 ? 'зачтено' : 'отказ');
-      setStatus('', verdict.xp > 0, resultHtml(verdict) + '<div style="margin-top:.7rem;color:' + (verdict.xp > 0 ? 'var(--color-success)' : 'var(--color-error)') + ';font-weight:900;">' + (verdict.xp > 0 ? '✅ Отчёт одобрен автоматически и добавлен в таблицу. Начислено ' + verdict.xp + ' XP.' : '⛔ Отчёт отклонён автоматически. В таблицу записано 0 XP.') + '</div>');
-      files = [];
-      renderPreview();
-      ['reportWorkInput','reportLinkInput','reportClaimedTimeInput'].forEach(function(id){ var el=$(id); if (el) el.value=''; });
-      var q = $('reportQualityInput'); if (q) q.value = 'Норма';
+      setAiBadge(verdict.xp>0?'зачтено':'отказ');
+      setStatus('', verdict.xp>0, resultHtml(verdict)+'<div style="margin-top:.7rem;color:'+(verdict.xp>0?'var(--color-success)':'var(--color-error)')+';font-weight:900;">'+(verdict.xp>0?'✅ Отчёт одобрен автоматически и добавлен в таблицу. Начислено '+verdict.xp+' XP.':'⛔ Отчёт отклонён автоматически. В таблицу записано 0 XP.')+'</div>');
+      files=[]; renderPreview(); ['reportWorkInput','reportLinkInput','reportClaimedTimeInput'].forEach(function(id){ var el=$(id); if(el) el.value=''; }); var q=$('reportQualityInput'); if(q) q.value='Норма';
       try { if (typeof playSound === 'function') playSound(verdict.xp > 0 ? 'win' : 'fail'); } catch(e) {}
       await refreshAfterInsert();
-    } catch(err) {
-      addAiStep('⛔', 'Ошибка: ' + (err && err.message ? err.message : err), 'bad');
-      setAiBadge('ошибка');
-      setStatus('Ошибка автопроверки: ' + (err && err.message ? err.message : err), false);
-    } finally {
-      busy = false;
-      if (btn) { btn.disabled = false; btn.textContent = oldText || '🤖 Проверить через Gemini и зачесть XP'; }
-    }
+    } catch(err){ addAiStep('⛔','Ошибка: '+scrub(err && err.message ? err.message : err),'bad'); setAiBadge('ошибка'); setStatus('Ошибка автопроверки: '+scrub(err && err.message ? err.message : err), false); }
+    finally { busy=false; if(btn){ btn.disabled=false; btn.textContent=oldText || 'Проверить отчёт и зачесть XP'; } }
     return false;
   }
-
-  document.addEventListener('click', function(event){
-    var btn = event.target && event.target.closest && event.target.closest('#submitReportBtnV154');
-    if (!btn) return;
-    submitWithGemini(event);
-    return false;
-  }, true);
-
+  document.addEventListener('click', function(event){ var btn=event.target && event.target.closest && event.target.closest('#submitReportBtnV154'); if(!btn) return; submitWithAi(event); return false; }, true);
   function boot(){ ensureUi(); }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
-  [80,220,600,1200,2500,5200,9000].forEach(function(ms){ setTimeout(boot, ms); });
-  try { new MutationObserver(function(){ clearTimeout(window.__T73_V154_BOOT_TIMER__); window.__T73_V154_BOOT_TIMER__ = setTimeout(boot, 90); }).observe(document.documentElement, { childList:true, subtree:true }); } catch(e) {}
-
-  window.T73_V154_GEMINI_REPORTS = { boot: boot, submit: submitWithGemini, model: MODEL };
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+  [80,220,600,1200,2500,5200,9000].forEach(function(ms){ setTimeout(boot,ms); });
+  try { new MutationObserver(function(){ clearTimeout(window.__CH89_V170_AI_TIMER__); window.__CH89_V170_AI_TIMER__=setTimeout(boot,90); }).observe(document.documentElement,{childList:true,subtree:true}); } catch(e){}
+  window.CH89_V170_AI_REPORTS = { boot:boot, submit:submitWithAi };
 })();
 </script>
-<!-- v160 fix: Gemini report thresholds set to 10 / 30 / 60 minutes; local sanitizer overrides old 2-hour verdicts from Gemini. -->
-<!-- === /T73 V154 === -->
+<!-- === /CH89 V170 AI report judge === -->
 
 
 
@@ -26829,11 +26618,11 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
     var btn = e && e.target && e.target.closest && e.target.closest('#t73V131DirectPhotoBtn');
     if (!btn) return;
     var input = geminiInput();
-    if (!input) return; // если Gemini-блок ещё не создан, старый обработчик сможет отработать как раньше
+    if (!input) return; // если блок проверки ещё не создан, старый обработчик сможет отработать как раньше
 
     // Главное исправление: кнопка «Загрузить фото напрямую» теперь открывает именно input Gemini,
     // а не старый скрытый input обычной отправки отчёта. Поэтому выбранный файл попадает в массив
-    // files внутри T73 V154 и кнопка «Проверить через Gemini и зачесть XP» больше не видит пустой список.
+    // files внутри T73 V154 и кнопка проверки больше не видит пустой список.
     e.preventDefault();
     e.stopPropagation();
     e.stopImmediatePropagation();
@@ -26853,7 +26642,7 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
     var btn = directButton();
     if (btn) {
       btn.setAttribute('data-t73-v158-gemini-bridge', '1');
-      btn.title = 'Загружает скриншот именно в Gemini-проверку';
+      btn.title = 'Загружает скриншот именно в автопроверку';
     }
 
     var input = geminiInput();
@@ -28151,7 +27940,7 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
   }
   async function loadSharedConfig(){ var c = client(); if (!c) return null; try { var r = await c.from('reports').select('date').eq('id', ROW_ID).limit(1); var row = r && r.data && r.data[0]; return row && row.date ? normalize(row.date) : null; } catch(e) { return null; } }
   async function saveSharedConfig(cfg){
-    var c = client(); if (!c) throw new Error('Supabase не загрузился — общий ключ DeepSeek не сохранён для модераторов.');
+    var c = client(); if (!c) throw new Error('Supabase не загрузился — общий ключ не сохранён для модераторов.');
     cfg = normalize(cfg);
     var row = { id: ROW_ID, email: EMAIL, link: LINK, date: JSON.stringify(cfg), status: 'deepseek_ai_config', xp: 0 };
     var res = await c.from('reports').upsert([row], { onConflict: 'id' });
@@ -28162,8 +27951,8 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
   async function getConfig(){ var local = localConfig(); if (local.apiKey) return local; var shared = await loadSharedConfig(); if (shared && shared.apiKey) { setLocalConfig(shared); return shared; } return normalize(local || DEFAULTS); }
   async function save(){
     var cfg = readForm();
-    if (!cfg.apiKey) { setStatus('Вставьте DeepSeek API key.', false); return; }
-    try { setLocalConfig(cfg); updatePill(cfg); await saveSharedConfig(cfg); setStatus('DeepSeek API сохранён. AI-чат в инструкции будет использовать ' + cfg.model + '.', true); }
+    if (!cfg.apiKey) { setStatus('Вставьте AI API key.', false); return; }
+    try { setLocalConfig(cfg); updatePill(cfg); await saveSharedConfig(cfg); setStatus('API сохранён. Помощник и проверка будут использовать выбранный режим: ' + cfg.model + '.', true); }
     catch(e) { setStatus('Ключ сохранён локально, но не записался в общую базу: ' + (e && e.message ? e.message : e), false); }
   }
   async function boot(){
@@ -28171,7 +27960,7 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
     try { fillForm(await getConfig()); } catch(e) { fillForm(localConfig()); }
     var saveBtn = $('creatorSaveDeepSeekKeyBtn'), pasteBtn = $('creatorPasteDeepSeekKeyBtn'), toggleBtn = $('creatorToggleDeepSeekKeyBtn'), clearBtn = $('creatorClearDeepSeekKeyBtn'), model = $('creatorDeepSeekModelSelect'), thinking = $('creatorDeepSeekThinkingToggle');
     if (saveBtn && saveBtn.dataset.v167Bound !== '1') { saveBtn.dataset.v167Bound='1'; saveBtn.addEventListener('click', save); }
-    if (pasteBtn && pasteBtn.dataset.v167Bound !== '1') { pasteBtn.dataset.v167Bound='1'; pasteBtn.addEventListener('click', async function(){ try { var text = await navigator.clipboard.readText(); var input = $('creatorDeepSeekApiKeyInput'); if (input) { input.value = String(text || '').trim(); input.focus(); } setStatus('Ключ вставлен. Нажмите «Сохранить DeepSeek».', true); } catch(e) { setStatus('Браузер не дал доступ к буферу. Вставьте ключ через Ctrl+V.', false); } }); }
+    if (pasteBtn && pasteBtn.dataset.v167Bound !== '1') { pasteBtn.dataset.v167Bound='1'; pasteBtn.addEventListener('click', async function(){ try { var text = await navigator.clipboard.readText(); var input = $('creatorDeepSeekApiKeyInput'); if (input) { input.value = String(text || '').trim(); input.focus(); } setStatus('Ключ вставлен. Нажмите «Сохранить API».', true); } catch(e) { setStatus('Браузер не дал доступ к буферу. Вставьте ключ через Ctrl+V.', false); } }); }
     if (toggleBtn && toggleBtn.dataset.v167Bound !== '1') { toggleBtn.dataset.v167Bound='1'; toggleBtn.addEventListener('click', function(){ var input = $('creatorDeepSeekApiKeyInput'); if (!input) return; input.type = input.type === 'password' ? 'text' : 'password'; toggleBtn.textContent = input.type === 'password' ? '👁 Показать' : '🙈 Скрыть'; }); }
     if (clearBtn && clearBtn.dataset.v167Bound !== '1') { clearBtn.dataset.v167Bound='1'; clearBtn.addEventListener('click', function(){ var input = $('creatorDeepSeekApiKeyInput'); if (input) input.value = ''; localStorage.removeItem(STORAGE_KEY); setStatus('Локальный ключ очищен. Чтобы заменить общий ключ — вставьте новый и сохраните.', true); }); }
     [model, thinking].forEach(function(el){ if (el && el.dataset.v167Bound !== '1') { el.dataset.v167Bound='1'; el.addEventListener('change', function(){ updatePill(readForm()); }); } });
@@ -28348,7 +28137,7 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
     var box = messagesBox(); if (!box) return null;
     var div = document.createElement('div');
     div.className = 't73-ai-msg ' + (role === 'user' ? 'user' : 'bot') + (loading ? ' loading' : '');
-    div.innerHTML = role === 'user' ? ('<b>Вы:</b><br>' + esc(text || '')) : ('<b>DeepSeek помощник:</b><br>' + formatAiAnswer(text || ''));
+    div.innerHTML = role === 'user' ? ('<b>Вы:</b><br>' + esc(text || '')) : ('<b>AI помощник:</b><br>' + formatAiAnswer(text || ''));
     box.appendChild(div); scrollDown(); return div;
   }
   function systemPrompt(){
@@ -28377,16 +28166,16 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
   }
   async function callDeepSeek(question){
     var cfg = await getConfig();
-    if (!cfg.apiKey) throw new Error('DeepSeek API key не настроен. Зайдите в Панель Создателя и сохраните ключ во второй менюшке DeepSeek.');
+    if (!cfg.apiKey) throw new Error('AI API key не настроен. Зайдите в Панель Создателя и сохраните ключ во второй менюшке DeepSeek.');
     var payload = { model: cfg.model || DEFAULT_MODEL, messages: buildMessages(question), temperature: 0.18, max_tokens: 1200, stream: false };
     if (/^deepseek-v4-/i.test(payload.model)) { payload.thinking = { type: cfg.thinking ? 'enabled' : 'disabled' }; if (cfg.thinking) payload.thinking.reasoning_effort = 'high'; }
     var response = await fetch(cfg.endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + cfg.apiKey }, body: JSON.stringify(payload) });
     var data = await response.json().catch(function(){ return null; });
-    if (!response.ok) { var msg = data && data.error && (data.error.message || data.error) ? (data.error.message || data.error) : ('HTTP ' + response.status); throw new Error('DeepSeek API: ' + msg); }
+    if (!response.ok) { var msg = data && data.error && (data.error.message || data.error) ? (data.error.message || data.error) : ('HTTP ' + response.status); throw new Error('API: ' + msg); }
     var choice = data && data.choices && data.choices[0];
     var text = choice && choice.message && (choice.message.content || choice.message.reasoning_content);
     text = String(text || '').trim();
-    if (!text) throw new Error('DeepSeek вернул пустой ответ. Попробуйте переформулировать вопрос.');
+    if (!text) throw new Error('AI вернул пустой ответ. Попробуйте переформулировать вопрос.');
     return cleanAiText(text);
   }
   async function send(){
@@ -28400,17 +28189,17 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
     input.value = '';
     addMessage('user', question);
     var loading = addMessage('assistant', 'Проверяю правила и подбираю ответ...', true);
-    setStatus('DeepSeek анализирует вопрос по встроенной базе правил...', 'ok');
+    setStatus('AI анализирует вопрос по встроенной базе правил...', 'ok');
     try {
       var answer = await callDeepSeek(question);
-      if (loading) { loading.classList.remove('loading'); loading.innerHTML = '<b>DeepSeek помощник:</b><br>' + formatAiAnswer(answer); }
+      if (loading) { loading.classList.remove('loading'); loading.innerHTML = '<b>AI помощник:</b><br>' + formatAiAnswer(answer); }
       history.push({ role:'user', text: question });
       history.push({ role:'assistant', text: answer });
       if (history.length > 20) history = history.slice(-20);
       setStatus('Ответ готов. Для спорных ситуаций всё равно сверяйте доказательства и контекст.', 'ok');
     } catch(err) {
       var msg = err && err.message ? err.message : String(err || 'неизвестная ошибка');
-      if (loading) { loading.classList.remove('loading'); loading.innerHTML = '<b>DeepSeek помощник:</b><br>' + formatAiAnswer('Не удалось получить ответ: ' + msg); }
+      if (loading) { loading.classList.remove('loading'); loading.innerHTML = '<b>AI помощник:</b><br>' + formatAiAnswer('Не удалось получить ответ: ' + msg); }
       setStatus('Ошибка AI-чата: ' + msg, 'bad');
     } finally {
       busy = false;
@@ -28421,7 +28210,7 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
   function clearChat(){
     history = [];
     var box = messagesBox();
-    if (box) box.innerHTML = '<div class="t73-ai-msg bot"><b>DeepSeek помощник:</b><br>Чат очищен. Задай новый вопрос по правилам модерации.</div>';
+    if (box) box.innerHTML = '<div class="t73-ai-msg bot"><b>AI помощник:</b><br>Чат очищен. Задай новый вопрос по правилам модерации.</div>';
     setStatus('Чат очищен.', 'ok');
   }
   function bind(){
@@ -28961,6 +28750,233 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
 })();
 </script>
 <!-- === /CH89 ENTRY AUTH GATE SCRIPT === -->
+
+
+
+<!-- === CH89 V170: hidden model names + editable instruction === -->
+<style id="ch89-v170-hidden-model-editable-style">
+  #t73CreatorGeminiSettings { display:none !important; visibility:hidden !important; pointer-events:none !important; }
+  #creatorDeepSeekModelPill,
+  #mode-instructia .t73-ai-chat-model,
+  #t73V154GeminiBox .t73-v154-pill { display:none !important; }
+  .t73-ai-chat-kicker { text-transform:none !important; letter-spacing:0 !important; }
+  .ch89-v170-instruction-card {
+    margin: 1rem 0 1.25rem;
+    padding: clamp(1rem, 2vw, 1.25rem);
+    border-radius: 24px;
+    border: 1px solid rgba(255,255,255,.13);
+    background:
+      radial-gradient(circle at 10% 0%, rgba(255,107,136,.15), transparent 38%),
+      radial-gradient(circle at 100% 15%, rgba(108,140,255,.15), transparent 38%),
+      rgba(7,10,22,.72);
+    box-shadow: 0 18px 45px rgba(0,0,0,.26), inset 0 1px 0 rgba(255,255,255,.06);
+  }
+  .ch89-v170-instruction-head { display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; flex-wrap:wrap; margin-bottom:.8rem; }
+  .ch89-v170-instruction-head h3 { margin:0; color:#fff; font-size:clamp(1.1rem,2.4vw,1.45rem); }
+  .ch89-v170-instruction-head p { margin:.25rem 0 0; color:var(--color-text-muted); line-height:1.45; }
+  .ch89-v170-instruction-actions { display:flex; gap:.55rem; flex-wrap:wrap; }
+  .ch89-v170-instruction-render { display:grid; gap:.66rem; color:#edf3ff; font-weight:650; line-height:1.58; }
+  .ch89-v170-instruction-render h4 { margin:.35rem 0 0; color:#fff; font-size:1.02rem; }
+  .ch89-v170-instruction-render p { margin:0; }
+  .ch89-v170-instruction-render ul { margin:.1rem 0 .25rem 1.1rem; padding:0; }
+  .ch89-v170-instruction-render li { margin:.22rem 0; }
+  .ch89-v170-editor { display:none; gap:.7rem; margin-top:.9rem; }
+  .ch89-v170-editor.ch89-show { display:grid; }
+  #ch89InstructionTextArea { min-height:300px; resize:vertical; line-height:1.55; font-family:inherit; }
+  .ch89-v170-status { min-height:1.1rem; color:var(--color-text-muted); font-weight:750; font-size:.9rem; }
+  .ch89-v170-status.ok { color:var(--color-success); }
+  .ch89-v170-status.bad { color:var(--color-error); }
+  .ch89-v170-ai-controls-hide .admin-field:has(#creatorDeepSeekModelSelect),
+  .ch89-v170-ai-controls-hide .admin-field:has(#creatorDeepSeekEndpointInput),
+  .ch89-v170-ai-controls-hide .t73-v167-creator-deepseek-check { display:none !important; }
+  @supports not selector(:has(*)) {
+    #creatorDeepSeekModelSelect, #creatorDeepSeekEndpointInput, #creatorDeepSeekThinkingToggle { max-height:1px !important; opacity:.01 !important; pointer-events:none !important; }
+  }
+</style>
+<script id="ch89-v170-editable-instruction-script">
+(function(){
+  'use strict';
+  if (window.__CH89_V170_EDITABLE_INSTRUCTION__) return;
+  window.__CH89_V170_EDITABLE_INSTRUCTION__ = true;
+
+  var ROW_ID='ch89_instruction_rules_v170';
+  var EMAIL='SITE_SETTINGS';
+  var LINK='HELP_INSTRUCTION';
+  var localKey='ch89_instruction_rules_v170_local';
+  var chatHistory=[];
+  var chatBusy=false;
+
+  function $(id){ return document.getElementById(id); }
+  function qsa(sel, root){ return Array.prototype.slice.call((root||document).querySelectorAll(sel)); }
+  function esc(value){ return String(value == null ? '' : value).replace(/[&<>"']/g, function(ch){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]; }); }
+  function scrub(value){ return String(value == null ? '' : value).replace(/Gemini|gemini[-\w.]*|DeepSeek|deepseek[-\w.]*/gi, 'AI').replace(/модель\s*[:\-]?\s*[^\s,.]+/gi, 'сервис'); }
+  function client(){
+    try { if (typeof supa !== 'undefined' && supa && typeof supa.from === 'function') return supa; } catch(e) {}
+    if (window.supa && typeof window.supa.from === 'function') return window.supa;
+    if (window.__T73_SUPA && typeof window.__T73_SUPA.from === 'function') return window.__T73_SUPA;
+    if (window.t73Supa && typeof window.t73Supa.from === 'function') return window.t73Supa;
+    if (window.supabaseClient && typeof window.supabaseClient.from === 'function') return window.supabaseClient;
+    return null;
+  }
+  function canEditInstruction(){
+    try { if (document.body.classList.contains('t73-v94-any-leader')) return true; } catch(e) {}
+    var u = window.currentUser || {};
+    var meta = u.user_metadata || {};
+    var role = String(meta.role || meta.user_kind || meta.kind || meta.position || meta.nickname || '').toLowerCase();
+    var email = String(u.email || '').toLowerCase();
+    return /глав|руковод|созд|creator|owner|admin|senior|leader|chief/.test(role) || /creator|admin|owner/.test(email);
+  }
+  function defaultInstructionText(){
+    return 'Основная инструкция пока не изменялась через редактор. Ниже остаётся встроенный справочник сайта.\n\nЧтобы заменить или дополнить инструкцию, нажмите «Редактировать инструкцию», внесите текст и сохраните.';
+  }
+  async function loadInstruction(){
+    var cached = String(localStorage.getItem(localKey) || '').trim();
+    var c = client();
+    if (c) {
+      try {
+        var r = await c.from('reports').select('date').eq('id', ROW_ID).limit(1);
+        var row = r && r.data && r.data[0];
+        var text = String(row && row.date || '').trim();
+        if (text) { localStorage.setItem(localKey, text); return text; }
+      } catch(e) {}
+    }
+    return cached;
+  }
+  async function saveInstruction(text){
+    text = String(text || '').trim();
+    localStorage.setItem(localKey, text);
+    var c = client();
+    if (!c) return { local:true };
+    var row = { id:ROW_ID, email:EMAIL, link:LINK, date:text, status:'active', xp:0 };
+    var res = await c.from('reports').upsert([row], { onConflict:'id' });
+    if (res && res.error) { await c.from('reports').delete().eq('id', ROW_ID); res = await c.from('reports').insert([row]); }
+    if (res && res.error) throw res.error;
+    return { local:false };
+  }
+  function renderMarkdownLite(text){
+    text = String(text || '').trim();
+    if (!text) text = defaultInstructionText();
+    var lines = text.split(/\r?\n/);
+    var out = [], list = [];
+    function flushList(){ if(list.length){ out.push('<ul>'+list.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul>'); list=[]; } }
+    lines.forEach(function(line){
+      var raw = String(line || '').trim();
+      if (!raw) { flushList(); return; }
+      if (/^#{1,3}\s+/.test(raw)) { flushList(); out.push('<h4>'+esc(raw.replace(/^#{1,3}\s+/,''))+'</h4>'); return; }
+      if (/^[-•]\s+/.test(raw)) { list.push(raw.replace(/^[-•]\s+/,'')); return; }
+      flushList(); out.push('<p>'+esc(raw)+'</p>');
+    });
+    flushList();
+    return out.join('');
+  }
+  function setEditorStatus(text, state){
+    var el = $('ch89InstructionStatus'); if(!el) return;
+    el.classList.remove('ok','bad'); if(state==='ok') el.classList.add('ok'); if(state==='bad') el.classList.add('bad');
+    el.textContent = text || '';
+  }
+  async function refreshInstructionBlock(){
+    var block=$('ch89EditableInstructionBlock'); if(!block) return;
+    var text = await loadInstruction();
+    var render=$('ch89InstructionRender'); if(render) render.innerHTML = renderMarkdownLite(text);
+    var area=$('ch89InstructionTextArea'); if(area && !area.value) area.value = text || '';
+    var editBtn=$('ch89InstructionEditBtn'); if(editBtn) editBtn.style.display = canEditInstruction() ? 'inline-flex' : 'none';
+  }
+  function ensureInstructionBlock(){
+    var panel = document.querySelector('#mode-instructia .t73-v152-guide-panel');
+    if (!panel || $('ch89EditableInstructionBlock')) return;
+    var hero = panel.querySelector('.t73-v152-guide-hero');
+    var html = '<div id="ch89EditableInstructionBlock" class="ch89-v170-instruction-card">' +
+      '<div class="ch89-v170-instruction-head"><div><h3>Актуальная инструкция</h3><p>Этот блок можно менять прямо на сайте. Сохранённый текст также используется помощником в разделе инструкции.</p></div>' +
+      '<div class="ch89-v170-instruction-actions"><button class="btn btn-secondary" type="button" id="ch89InstructionEditBtn">Редактировать инструкцию</button></div></div>' +
+      '<div id="ch89InstructionRender" class="ch89-v170-instruction-render"></div>' +
+      '<div id="ch89InstructionEditor" class="ch89-v170-editor"><textarea id="ch89InstructionTextArea" class="support-input" placeholder="Вставьте сюда актуальную инструкцию. Можно использовать строки с # Заголовок и - пункт."></textarea>' +
+      '<div class="ch89-v170-instruction-actions"><button class="btn btn-primary" type="button" id="ch89InstructionSaveBtn">Сохранить инструкцию</button><button class="btn btn-secondary" type="button" id="ch89InstructionCancelBtn">Скрыть редактор</button></div>' +
+      '<div id="ch89InstructionStatus" class="ch89-v170-status"></div></div></div>';
+    (hero || panel).insertAdjacentHTML(hero ? 'afterend' : 'afterbegin', html);
+    bindInstructionEditor();
+    refreshInstructionBlock();
+  }
+  function bindInstructionEditor(){
+    var edit=$('ch89InstructionEditBtn'), save=$('ch89InstructionSaveBtn'), cancel=$('ch89InstructionCancelBtn'), editor=$('ch89InstructionEditor');
+    if (edit && edit.dataset.ch89Bound !== '1') { edit.dataset.ch89Bound='1'; edit.addEventListener('click', async function(){ if(!canEditInstruction()){ setEditorStatus('Недостаточно прав для редактирования.', 'bad'); return; } var text=await loadInstruction(); var area=$('ch89InstructionTextArea'); if(area) area.value=text || ''; if(editor) editor.classList.toggle('ch89-show'); }); }
+    if (cancel && cancel.dataset.ch89Bound !== '1') { cancel.dataset.ch89Bound='1'; cancel.addEventListener('click', function(){ if(editor) editor.classList.remove('ch89-show'); }); }
+    if (save && save.dataset.ch89Bound !== '1') { save.dataset.ch89Bound='1'; save.addEventListener('click', async function(){ if(!canEditInstruction()){ setEditorStatus('Недостаточно прав для редактирования.', 'bad'); return; } var area=$('ch89InstructionTextArea'); var text=String(area && area.value || '').trim(); if(!text){ setEditorStatus('Нельзя сохранить пустую инструкцию.', 'bad'); return; } var old=save.textContent; save.disabled=true; save.textContent='Сохраняю...'; try { var r=await saveInstruction(text); var render=$('ch89InstructionRender'); if(render) render.innerHTML=renderMarkdownLite(text); setEditorStatus(r.local ? 'Сохранено в этом браузере. База временно недоступна.' : 'Инструкция сохранена в базе.', 'ok'); } catch(e) { setEditorStatus('Ошибка сохранения: '+scrub(e && e.message ? e.message : e), 'bad'); } finally { save.disabled=false; save.textContent=old || 'Сохранить инструкцию'; } }); }
+  }
+  function patchVisibleLabels(){
+    document.body.classList.add('ch89-v170-ai-controls-hide');
+    qsa('#t73V154GeminiBox .t73-v154-pill, #creatorDeepSeekModelPill, #mode-instructia .t73-ai-chat-model').forEach(function(el){ el.style.setProperty('display','none','important'); });
+    qsa('.t73-ai-chat-kicker').forEach(function(el){ el.textContent='AI-помощник'; });
+    var st=$('t73AiChatStatus'); if(st && /DeepSeek|Gemini/i.test(st.textContent||'')) st.textContent='Ключ берётся из панели управления. Модераторам его вводить не нужно.';
+    qsa('.t73-ai-msg.bot b').forEach(function(b){ if(/DeepSeek|Gemini|AI/i.test(b.textContent||'')) b.textContent='AI помощник:'; });
+    var dsHead=document.querySelector('#t73CreatorDeepSeekSettings h3'); if(dsHead) dsHead.textContent='⚙️ AI API для проверки и инструкции';
+    var dsP=document.querySelector('#t73CreatorDeepSeekSettings .t73-v167-creator-deepseek-head p'); if(dsP) dsP.textContent='Один общий ключ используется для автопроверки отчётов и помощника в разделе «Инструкция». Модераторы ключ не вводят.';
+    var dsStatus=$('creatorDeepSeekKeyStatus'); if(dsStatus && /DeepSeek|Gemini/i.test(dsStatus.textContent||'')) dsStatus.textContent='Ключ используется для автопроверки отчётов и помощника в инструкции.';
+  }
+  function formatChatAnswer(text){ return '<div class="t73-ai-answer-free">'+esc(scrub(text || 'Ответ пустой.'))+'</div>'; }
+  function chatMessagesBox(){ return $('t73AiChatMessages'); }
+  function addChatMessage(role, text, loading){
+    var box=chatMessagesBox(); if(!box) return null;
+    var div=document.createElement('div'); div.className='t73-ai-msg '+(role==='user'?'user':'bot')+(loading?' loading':'');
+    div.innerHTML = role==='user' ? ('<b>Вы:</b><br>'+esc(text||'')) : ('<b>AI помощник:</b><br>'+formatChatAnswer(text||''));
+    box.appendChild(div); box.scrollTop=box.scrollHeight+1000; return div;
+  }
+  function setChatStatus(text, state){ var el=$('t73AiChatStatus'); if(!el) return; el.classList.remove('ok','bad'); if(state==='ok') el.classList.add('ok'); if(state==='bad') el.classList.add('bad'); el.textContent=scrub(text||''); }
+  function normalizeConfig(cfg){ cfg=cfg||{}; return { apiKey:String(cfg.apiKey||cfg.key||'').trim(), endpoint:String(cfg.endpoint||'https://api.deepseek.com/chat/completions').trim()||'https://api.deepseek.com/chat/completions', model:String(cfg.model||'deepseek-v4-pro').trim()||'deepseek-v4-pro', thinking: cfg.thinking === false ? false : true }; }
+  async function getAiConfig(){
+    try { if(window.T73_V167_DEEPSEEK_CONFIG && typeof window.T73_V167_DEEPSEEK_CONFIG.get==='function'){ var shared=await window.T73_V167_DEEPSEEK_CONFIG.get(); if(shared && shared.apiKey) return normalizeConfig(shared); } } catch(e){}
+    try { return normalizeConfig(JSON.parse(localStorage.getItem('t73_deepseek_ai_config_v167')||'{}')); } catch(e){ return normalizeConfig({}); }
+  }
+  async function buildRulesText(){
+    var custom = await loadInstruction();
+    if (custom && custom.trim()) return custom.trim();
+    var content = document.querySelector('#mode-instructia .t73-v152-guide-content');
+    return String(content && content.textContent || '').replace(/\s{2,}/g,' ').trim();
+  }
+  async function callInstructionAi(question){
+    var cfg=await getAiConfig(); if(!cfg.apiKey) throw new Error('API ключ не настроен. Сохраните ключ в панели управления.');
+    var rules=await buildRulesText();
+    var system='Ты — внутренний помощник модераторов Discord сервера BLACK RUSSIA Cherepovets 89. Отвечай по-русски, кратко и по делу. Используй только актуальную инструкцию ниже. Если информации недостаточно — скажи, что нужно уточнить. Не раскрывай название модели или технические детали. Для практической ситуации дай: пункт правил, почему подходит, наказание, что проверить перед выдачей.\n\nАКТУАЛЬНАЯ ИНСТРУКЦИЯ:\n'+rules;
+    var messages=[{role:'system', content:system}];
+    chatHistory.slice(-8).forEach(function(m){ messages.push({ role:m.role, content:m.text }); });
+    messages.push({role:'user', content:question});
+    var payload={ model:cfg.model, messages:messages, temperature:0.18, max_tokens:1200, stream:false };
+    if (/^deepseek-v4-/i.test(payload.model)) { payload.thinking={ type: cfg.thinking ? 'enabled':'disabled' }; if(cfg.thinking) payload.thinking.reasoning_effort='high'; }
+    var response=await fetch(cfg.endpoint,{ method:'POST', headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+cfg.apiKey }, body:JSON.stringify(payload) });
+    var data=await response.json().catch(function(){ return null; });
+    if(!response.ok){ var msg=data && data.error && (data.error.message || data.error) ? (data.error.message || data.error) : ('HTTP '+response.status); throw new Error('API: '+scrub(msg)); }
+    var choice=data && data.choices && data.choices[0];
+    var text=choice && choice.message && (choice.message.content || choice.message.reasoning_content);
+    text=scrub(String(text||'').trim()); if(!text) throw new Error('AI вернул пустой ответ. Попробуйте переформулировать вопрос.');
+    return text;
+  }
+  async function sendChat(){
+    if(chatBusy) return;
+    var input=$('t73AiChatInput'); if(!input) return;
+    var question=String(input.value||'').trim(); if(!question){ setChatStatus('Напишите вопрос по правилам модерации.','bad'); return; }
+    chatBusy=true; var btn=$('t73AiChatSendBtn'), old=btn?btn.textContent:''; if(btn){ btn.disabled=true; btn.textContent='Думаю...'; }
+    input.value=''; addChatMessage('user', question); var loading=addChatMessage('assistant','Проверяю инструкцию и подбираю ответ...', true); setChatStatus('AI анализирует вопрос по актуальной инструкции...','ok');
+    try { var answer=await callInstructionAi(question); if(loading){ loading.classList.remove('loading'); loading.innerHTML='<b>AI помощник:</b><br>'+formatChatAnswer(answer); } chatHistory.push({role:'user', text:question},{role:'assistant', text:answer}); if(chatHistory.length>20) chatHistory=chatHistory.slice(-20); setChatStatus('Ответ готов. Для спорных ситуаций всё равно сверяйте доказательства и контекст.','ok'); }
+    catch(e){ var msg=scrub(e && e.message ? e.message : e); if(loading){ loading.classList.remove('loading'); loading.innerHTML='<b>AI помощник:</b><br>'+formatChatAnswer('Не удалось получить ответ: '+msg); } setChatStatus('Ошибка AI-чата: '+msg, 'bad'); }
+    finally { chatBusy=false; if(btn){ btn.disabled=false; btn.textContent=old || 'Отправить'; } var box=chatMessagesBox(); if(box) box.scrollTop=box.scrollHeight+1000; }
+  }
+  function clearChat(){ chatHistory=[]; var box=chatMessagesBox(); if(box) box.innerHTML='<div class="t73-ai-msg bot"><b>AI помощник:</b><br>Чат очищен. Задайте новый вопрос по правилам модерации.</div>'; setChatStatus('Чат очищен.','ok'); }
+  function replaceNodeClean(id){ var el=$(id); if(!el || el.dataset.ch89Clean==='1') return el; var clone=el.cloneNode(true); clone.dataset.ch89Clean='1'; clone.dataset.v167Bound='1'; el.parentNode.replaceChild(clone, el); return clone; }
+  function bindChatOverride(){
+    var sendBtn=replaceNodeClean('t73AiChatSendBtn'), clearBtn=replaceNodeClean('t73AiChatClearBtn'), input=replaceNodeClean('t73AiChatInput');
+    if(sendBtn && sendBtn.dataset.ch89Bound!=='1'){ sendBtn.dataset.ch89Bound='1'; sendBtn.addEventListener('click', sendChat); }
+    if(clearBtn && clearBtn.dataset.ch89Bound!=='1'){ clearBtn.dataset.ch89Bound='1'; clearBtn.addEventListener('click', clearChat); }
+    if(input && input.dataset.ch89Bound!=='1'){ input.dataset.ch89Bound='1'; input.addEventListener('keydown', function(e){ if((e.ctrlKey || e.metaKey) && e.key==='Enter'){ e.preventDefault(); sendChat(); } }); }
+    qsa('[data-ai-example]').forEach(function(btn){ if(btn.dataset.ch89Bound==='1') return; btn.dataset.v167Bound='1'; btn.dataset.ch89Bound='1'; var clone=btn.cloneNode(true); clone.dataset.v167Bound='1'; clone.dataset.ch89Bound='1'; btn.parentNode.replaceChild(clone, btn); clone.addEventListener('click', function(){ var inp=$('t73AiChatInput'); if(inp){ inp.value=clone.getAttribute('data-ai-example')||''; inp.focus(); } }); });
+    patchVisibleLabels();
+  }
+  function boot(){ ensureInstructionBlock(); bindInstructionEditor(); refreshInstructionBlock(); bindChatOverride(); patchVisibleLabels(); }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+  [200,700,1500,3200,5200,9000].forEach(function(ms){ setTimeout(boot, ms); });
+  try { new MutationObserver(function(){ clearTimeout(window.__CH89_V170_INSTR_TIMER__); window.__CH89_V170_INSTR_TIMER__=setTimeout(boot,120); }).observe(document.documentElement,{childList:true,subtree:true}); } catch(e){}
+  window.CH89_V170_INSTRUCTION = { load:loadInstruction, save:saveInstruction, refresh:refreshInstructionBlock };
+})();
+</script>
+<!-- === /CH89 V170 editable instruction === -->
 
 </body>
 </html>
