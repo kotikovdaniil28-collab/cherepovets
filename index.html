@@ -25682,6 +25682,8 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
   var STORAGE_KEY = 't73_deepseek_ai_config_v167';
   var DEFAULT_ENDPOINT = 'https://api.deepseek.com/chat/completions';
   var DEFAULT_MODEL = 'deepseek-v4-pro';
+  var REPORT_INSTRUCTION_ROW = 'ch89_report_check_instruction_v172';
+  var REPORT_INSTRUCTION_LOCAL = 'ch89_report_check_instruction_v172_local';
   var files = [];
   var busy = false;
 
@@ -25690,6 +25692,15 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
 'Начисление XP строго по фактическому времени на скриншоте: от 10 до 29 минут включительно — 15 XP и категория "Норма"; от 30 до 59 минут — 30 XP и категория "Перенорма"; от 60 минут и выше — 60 XP и категория "Герой дня"; меньше 10 минут, отсутствие подтверждённого времени, нечитаемый или фальшивый отчёт — 0 XP и категория "Не выполнено". ' +
 'Если заявленное время и скриншот немного отличаются, используй фактическое время со скриншота. ' +
 'Формат ответа строго такой: {"status":"Одобрено" или "Отклонено","verifiedTime":"найденное время","category":"Норма" или "Перенорма" или "Герой дня" или "Не выполнено","xp":15 или 30 или 60 или 0,"reason":"короткая причина"}';
+
+  function defaultReportInstruction(){
+    return 'Проверяй отчёты модераторов строго по доказательству на скриншоте. Сначала найди фактическое время работы на скриншоте, затем сравни его с заявленным временем. Если время не читается, скриншот не относится к отчёту, есть признаки подделки или доказательство не подтверждает работу — отклоняй и ставь 0 XP. Стандартные пороги: 10–29 минут — Норма, 15 XP; 30–59 минут — Перенорма, 30 XP; 60+ минут — Герой дня, 60 XP; меньше 10 минут — Не выполнено, 0 XP. В reason коротко объясни, что именно найдено и почему отчёт принят или отклонён.';
+  }
+  function isCustomReportInstruction(text){
+    var a=String(text||'').replace(/\s+/g,' ').trim();
+    var b=defaultReportInstruction().replace(/\s+/g,' ').trim();
+    return !!a && a !== b;
+  }
 
   function $(id){ return document.getElementById(id); }
   function esc(value){ return String(value == null ? '' : value).replace(/[&<>"']/g, function(ch){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]; }); }
@@ -25748,7 +25759,8 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
     if (minutes >= 10) return {status:'Одобрено', category:'Норма', xp:15, threshold:'10 минут'};
     return {status:'Отклонено', category:'Не выполнено', xp:0, threshold:'10 минут'};
   }
-  function sanitizeResult(raw){
+  function sanitizeResult(raw, instructionText){
+    var customRules = isCustomReportInstruction(instructionText);
     var result=raw||{};
     var status=String(result.status||'').trim();
     var category=String(result.category||'').trim();
@@ -25756,19 +25768,23 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
     var reason=scrub(String(result.reason||'').trim());
     var xp=Number(result.xp||0);
     var minutes=durationToMinutes(verifiedTime), norm=normByMinutes(minutes);
-    if(norm){
+    if(norm && !customRules){
       status=norm.status; category=norm.category; xp=norm.xp;
       if (xp>0 && (!reason || /2\s*час|двух\s*час|минимальн/i.test(reason))) reason='Фактическое время на скриншоте (' + verifiedTime + ', примерно ' + minutes + ' мин.) достигает порога «' + category + '». Начислено ' + xp + ' XP.';
       if (xp===0) reason='Фактическое время на скриншоте (' + (verifiedTime || 'не найдено') + (minutes != null ? ', примерно ' + minutes + ' мин.' : '') + ') меньше минимальной нормы 10 минут. Начислено 0 XP.';
     } else {
       if (!['Одобрено','Отклонено'].includes(status)) status = xp > 0 ? 'Одобрено' : 'Отклонено';
-      if (!['Норма','Перенорма','Герой дня','Не выполнено'].includes(category)) category = xp >= 60 ? 'Герой дня' : xp >= 30 ? 'Перенорма' : xp >= 15 ? 'Норма' : 'Не выполнено';
+      if (!category) category = customRules ? (xp > 0 ? 'Засчитано' : 'Не выполнено') : (xp >= 60 ? 'Герой дня' : xp >= 30 ? 'Перенорма' : xp >= 15 ? 'Норма' : 'Не выполнено');
       if (status === 'Отклонено') xp = 0;
-      if (category === 'Норма') xp = 15;
-      if (category === 'Перенорма') xp = 30;
-      if (category === 'Герой дня') xp = 60;
-      if (category === 'Не выполнено') xp = 0;
-      if (![0,15,30,60].includes(xp)) xp = 0;
+      if (!customRules) {
+        if (category === 'Норма') xp = 15;
+        if (category === 'Перенорма') xp = 30;
+        if (category === 'Герой дня') xp = 60;
+        if (category === 'Не выполнено') xp = 0;
+        if (![0,15,30,60].includes(xp)) xp = 0;
+      } else {
+        xp = Math.max(0, Math.round(Number(xp) || 0));
+      }
     }
     return { status:status, verifiedTime:verifiedTime || 'не найдено', category:category, xp:xp, reason:reason || 'Проверка завершена без подробного объяснения.' };
   }
@@ -25828,15 +25844,28 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
     cfg=cfg||{}; return { apiKey:String(cfg.apiKey||cfg.key||'').trim(), endpoint:String(cfg.endpoint||DEFAULT_ENDPOINT).trim()||DEFAULT_ENDPOINT, model:String(cfg.model||DEFAULT_MODEL).trim()||DEFAULT_MODEL, thinking: cfg.thinking === false ? false : true };
   }
   async function getConfig(){
+    try { if(window.CH89_V171_AI_CONFIG && typeof window.CH89_V171_AI_CONFIG.getReports==='function'){ var sep=await window.CH89_V171_AI_CONFIG.getReports(); if(sep && sep.apiKey) return normalizeConfig(sep); } } catch(e){}
     try { if(window.T73_V167_DEEPSEEK_CONFIG && typeof window.T73_V167_DEEPSEEK_CONFIG.get==='function'){ var shared=await window.T73_V167_DEEPSEEK_CONFIG.get(); if(shared && shared.apiKey) return normalizeConfig(shared); } } catch(e){}
-    try { return normalizeConfig(JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}')); } catch(e){ return normalizeConfig({}); }
+    try { return normalizeConfig(JSON.parse(localStorage.getItem('ch89_ai_reports_config_v171')||localStorage.getItem(STORAGE_KEY)||'{}')); } catch(e){ return normalizeConfig({}); }
+  }
+  async function loadReportInstruction(){
+    try { if(window.CH89_V172_REPORT_INSTRUCTION && typeof window.CH89_V172_REPORT_INSTRUCTION.load==='function') { var fromPanel=await window.CH89_V172_REPORT_INSTRUCTION.load(); if(String(fromPanel||'').trim()) return String(fromPanel).trim(); } } catch(e){}
+    var local='';
+    try { local=String(localStorage.getItem(REPORT_INSTRUCTION_LOCAL)||'').trim(); } catch(e){}
+    var c=client();
+    if(c){
+      try { var r=await c.from('reports').select('date').eq('id', REPORT_INSTRUCTION_ROW).limit(1); var row=r && r.data && r.data[0]; if(row && row.date) return String(row.date||'').trim(); } catch(e){}
+    }
+    return local || defaultReportInstruction();
   }
   async function callAiJudge(dataUrl, declaredTime, meta){
     var cfg=await getConfig();
     if(!cfg.apiKey) throw new Error('API ключ проверки не настроен. Сохраните ключ в панели управления.');
-    var userText='Проверь отчёт модератора. Заявленное время: '+declaredTime+'\nНик: '+(meta.nick||'')+'\nДата отчёта: '+(meta.date||'')+'\nКомментарий/работа: '+(meta.work||'')+'\nВерни только JSON по указанной схеме.';
+    var reportInstruction=await loadReportInstruction();
+    var systemPrompt=SYSTEM_PROMPT + '\n\nАКТУАЛЬНАЯ ИНСТРУКЦИЯ ДЛЯ ПРОВЕРКИ ОТЧЁТОВ:\n' + (reportInstruction || defaultReportInstruction()) + '\n\nЭта инструкция является главным источником правил для проверки отчёта. Если в ней указаны другие нормы, категории, условия принятия или XP — применяй именно её. Всё равно отвечай только JSON без markdown и не называй сервис или модель.';
+    var userText='Проверь отчёт модератора по актуальной инструкции. Заявленное время: '+declaredTime+'\nНик: '+(meta.nick||'')+'\nДата отчёта: '+(meta.date||'')+'\nКомментарий/работа: '+(meta.work||'')+'\nВерни только JSON по указанной схеме.';
     var messages=[
-      { role:'system', content:SYSTEM_PROMPT },
+      { role:'system', content:systemPrompt },
       { role:'user', content:[ { type:'text', text:userText }, { type:'image_url', image_url:{ url:dataUrl } } ] }
     ];
     var payload={ model:cfg.model, messages:messages, temperature:0.05, max_tokens:700, stream:false, response_format:{ type:'json_object' } };
@@ -25846,7 +25875,7 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
     if(!response.ok){ var msg=data && data.error && (data.error.message || data.error) ? (data.error.message || data.error) : ('HTTP '+response.status); throw new Error('Сервис проверки: '+scrub(msg)); }
     var choice=data && data.choices && data.choices[0];
     var text=choice && choice.message && (choice.message.content || choice.message.reasoning_content);
-    return sanitizeResult(parseModelJson(text));
+    return sanitizeResult(parseModelJson(text), reportInstruction);
   }
   function resultHtml(verdict){
     var cls=verdict.xp>0?'good':'bad';
@@ -28818,13 +28847,15 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
     if (window.supabaseClient && typeof window.supabaseClient.from === 'function') return window.supabaseClient;
     return null;
   }
+  function ch89CreatorOnlyEmail(){
+    var email = '';
+    try { email = String(((window.currentUser || currentUser || {}) || {}).email || '').trim().toLowerCase(); } catch(e) {}
+    if (!email) return false;
+    try { if (typeof creatorEmail !== 'undefined' && email === String(creatorEmail || '').trim().toLowerCase()) return true; } catch(e) {}
+    return email === 'daniiltimosin72@gmail.com';
+  }
   function canEditInstruction(){
-    try { if (document.body.classList.contains('t73-v94-any-leader')) return true; } catch(e) {}
-    var u = window.currentUser || {};
-    var meta = u.user_metadata || {};
-    var role = String(meta.role || meta.user_kind || meta.kind || meta.position || meta.nickname || '').toLowerCase();
-    var email = String(u.email || '').toLowerCase();
-    return /глав|руковод|созд|creator|owner|admin|senior|leader|chief/.test(role) || /creator|admin|owner/.test(email);
+    return ch89CreatorOnlyEmail();
   }
   function defaultInstructionText(){
     return 'Основная инструкция пока не изменялась через редактор. Ниже остаётся встроенный справочник сайта.\n\nЧтобы заменить или дополнить инструкцию, нажмите «Редактировать инструкцию», внесите текст и сохраните.';
@@ -28886,7 +28917,7 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
     if (!panel || $('ch89EditableInstructionBlock')) return;
     var hero = panel.querySelector('.t73-v152-guide-hero');
     var html = '<div id="ch89EditableInstructionBlock" class="ch89-v170-instruction-card">' +
-      '<div class="ch89-v170-instruction-head"><div><h3>Актуальная инструкция</h3><p>Этот блок можно менять прямо на сайте. Сохранённый текст также используется помощником в разделе инструкции.</p></div>' +
+      '<div class="ch89-v170-instruction-head"><div><h3>Актуальная инструкция</h3><p>Этот блок может редактировать только создатель. Сохранённый текст также используется помощником в разделе инструкции.</p></div>' +
       '<div class="ch89-v170-instruction-actions"><button class="btn btn-secondary" type="button" id="ch89InstructionEditBtn">Редактировать инструкцию</button></div></div>' +
       '<div id="ch89InstructionRender" class="ch89-v170-instruction-render"></div>' +
       '<div id="ch89InstructionEditor" class="ch89-v170-editor"><textarea id="ch89InstructionTextArea" class="support-input" placeholder="Вставьте сюда актуальную инструкцию. Можно использовать строки с # Заголовок и - пункт."></textarea>' +
@@ -28923,8 +28954,9 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
   function setChatStatus(text, state){ var el=$('t73AiChatStatus'); if(!el) return; el.classList.remove('ok','bad'); if(state==='ok') el.classList.add('ok'); if(state==='bad') el.classList.add('bad'); el.textContent=scrub(text||''); }
   function normalizeConfig(cfg){ cfg=cfg||{}; return { apiKey:String(cfg.apiKey||cfg.key||'').trim(), endpoint:String(cfg.endpoint||'https://api.deepseek.com/chat/completions').trim()||'https://api.deepseek.com/chat/completions', model:String(cfg.model||'deepseek-v4-pro').trim()||'deepseek-v4-pro', thinking: cfg.thinking === false ? false : true }; }
   async function getAiConfig(){
+    try { if(window.CH89_V171_AI_CONFIG && typeof window.CH89_V171_AI_CONFIG.getAnswers==='function'){ var sep=await window.CH89_V171_AI_CONFIG.getAnswers(); if(sep && sep.apiKey) return normalizeConfig(sep); } } catch(e){}
     try { if(window.T73_V167_DEEPSEEK_CONFIG && typeof window.T73_V167_DEEPSEEK_CONFIG.get==='function'){ var shared=await window.T73_V167_DEEPSEEK_CONFIG.get(); if(shared && shared.apiKey) return normalizeConfig(shared); } } catch(e){}
-    try { return normalizeConfig(JSON.parse(localStorage.getItem('t73_deepseek_ai_config_v167')||'{}')); } catch(e){ return normalizeConfig({}); }
+    try { return normalizeConfig(JSON.parse(localStorage.getItem('ch89_ai_answers_config_v171')||localStorage.getItem('t73_deepseek_ai_config_v167')||'{}')); } catch(e){ return normalizeConfig({}); }
   }
   async function buildRulesText(){
     var custom = await loadInstruction();
@@ -28977,6 +29009,328 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
 })();
 </script>
 <!-- === /CH89 V170 editable instruction === -->
+
+
+
+<!-- === CH89 V171: separate AI APIs + panel instruction editor === -->
+<style id="ch89-v171-separate-api-style">
+  #t73CreatorGeminiSettings { display:none !important; }
+  #t73CreatorDeepSeekSettings {
+    display:grid !important;
+    visibility:visible !important;
+    pointer-events:auto !important;
+    gap:1rem !important;
+    padding:clamp(1rem,2vw,1.35rem) !important;
+    border-radius:22px !important;
+    border:1px solid rgba(108,140,255,.32) !important;
+    background:
+      radial-gradient(circle at 0% 0%, rgba(108,140,255,.16), transparent 35%),
+      radial-gradient(circle at 100% 0%, rgba(255,107,136,.13), transparent 38%),
+      rgba(8,11,24,.74) !important;
+    box-shadow:0 18px 46px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.06) !important;
+    margin-bottom:1.5rem !important;
+  }
+  .ch89-v171-panel-head { display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; flex-wrap:wrap; }
+  .ch89-v171-panel-head h3 { margin:0 0 .35rem; color:#fff; font-size:clamp(1.08rem,2.2vw,1.45rem); }
+  .ch89-v171-panel-head p { margin:0; color:var(--color-text-muted); line-height:1.45; max-width:820px; }
+  .ch89-v171-badge { border:1px solid rgba(255,255,255,.14); background:rgba(255,255,255,.07); color:#dfe6ff; border-radius:999px; padding:.36rem .7rem; font-weight:900; font-size:.8rem; }
+  .ch89-v171-api-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1rem; }
+  .ch89-v171-api-card, .ch89-v171-instruction-panel {
+    display:grid; gap:.85rem; padding:1rem; border-radius:18px;
+    border:1px solid rgba(255,255,255,.12); background:rgba(0,0,0,.20);
+  }
+  .ch89-v171-api-card h4, .ch89-v171-instruction-panel h4 { margin:0; color:#fff; font-size:1rem; }
+  .ch89-v171-api-card p, .ch89-v171-instruction-panel p { margin:0; color:var(--color-text-muted); line-height:1.42; font-size:.9rem; }
+  .ch89-v171-fields { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:.75rem; }
+  .ch89-v171-fields .admin-field:first-child, .ch89-v171-fields .admin-field.endpoint { grid-column:1/-1; }
+  .ch89-v171-check { display:flex; align-items:center; gap:.55rem; color:#e8edff; font-weight:800; font-size:.9rem; user-select:none; }
+  .ch89-v171-check input { width:18px; height:18px; accent-color:var(--color-primary); }
+  .ch89-v171-actions { display:flex; flex-wrap:wrap; gap:.55rem; }
+  .ch89-v171-actions .btn { flex:1 1 145px; }
+  .ch89-v171-status { min-height:1.2rem; color:var(--color-text-muted); font-weight:850; font-size:.9rem; }
+  .ch89-v171-status.ok { color:var(--color-success); }
+  .ch89-v171-status.bad { color:var(--color-error); }
+  #ch89PanelInstructionText, #ch89ReportInstructionText { min-height:320px; resize:vertical; line-height:1.55; font-family:inherit; }
+  .ch89-v171-instruction-panel { border-color:rgba(82,199,123,.26); background:linear-gradient(145deg, rgba(82,199,123,.08), rgba(0,0,0,.20)); }
+  #mode-instructia .t73-ai-chat-model, #creatorDeepSeekModelPill, #t73V154GeminiBox .t73-v154-pill { display:none !important; }
+  @media (max-width:920px){ .ch89-v171-api-grid, .ch89-v171-fields { grid-template-columns:1fr; } .ch89-v171-fields .admin-field:first-child, .ch89-v171-fields .admin-field.endpoint { grid-column:auto; } }
+</style>
+<script id="ch89-v171-separate-api-script">
+(function(){
+  'use strict';
+  if (window.__CH89_V171_SEPARATE_AI_PANEL__) return;
+  window.__CH89_V171_SEPARATE_AI_PANEL__ = true;
+
+  var DEFAULT_ENDPOINT = 'https://api.deepseek.com/chat/completions';
+  var DEFAULT_MODEL = 'deepseek-v4-pro';
+  var REPORTS_KEY = 'ch89_ai_reports_config_v171';
+  var ANSWERS_KEY = 'ch89_ai_answers_config_v171';
+  var LEGACY_KEY = 't73_deepseek_ai_config_v167';
+  var REPORTS_ROW = 'ch89_ai_reports_api_v171';
+  var ANSWERS_ROW = 'ch89_ai_answers_api_v171';
+  var REPORT_INSTRUCTION_ROW = 'ch89_report_check_instruction_v172';
+  var REPORT_INSTRUCTION_LOCAL = 'ch89_report_check_instruction_v172_local';
+  var INSTRUCTION_ROW = 'ch89_instruction_rules_v170';
+  var SETTINGS_EMAIL = 'SITE_SETTINGS';
+
+  function $(id){ return document.getElementById(id); }
+  function esc(value){ return String(value == null ? '' : value).replace(/[&<>"']/g, function(ch){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]; }); }
+  function client(){
+    try { if (typeof supa !== 'undefined' && supa && typeof supa.from === 'function') return supa; } catch(e) {}
+    if (window.supa && typeof window.supa.from === 'function') return window.supa;
+    if (window.__T73_SUPA && typeof window.__T73_SUPA.from === 'function') return window.__T73_SUPA;
+    if (window.t73Supa && typeof window.t73Supa.from === 'function') return window.t73Supa;
+    if (window.supabaseClient && typeof window.supabaseClient.from === 'function') return window.supabaseClient;
+    return null;
+  }
+  function normalizeConfig(cfg){
+    cfg = cfg || {};
+    return {
+      apiKey: String(cfg.apiKey || cfg.key || '').trim(),
+      endpoint: String(cfg.endpoint || DEFAULT_ENDPOINT).trim() || DEFAULT_ENDPOINT,
+      model: String(cfg.model || DEFAULT_MODEL).trim() || DEFAULT_MODEL,
+      thinking: cfg.thinking === false ? false : true
+    };
+  }
+  function readLocal(key){
+    try { return normalizeConfig(JSON.parse(localStorage.getItem(key) || '{}')); } catch(e){ return normalizeConfig({}); }
+  }
+  function writeLocal(key, cfg){ localStorage.setItem(key, JSON.stringify(normalizeConfig(cfg))); }
+  function makeRow(kind, cfg){ return { id: kind === 'reports' ? REPORTS_ROW : ANSWERS_ROW, email: SETTINGS_EMAIL, link: kind === 'reports' ? 'AI_REPORTS_API' : 'AI_ANSWERS_API', date: JSON.stringify(normalizeConfig(cfg)), status:'active', xp:0 }; }
+  async function readRemote(kind){
+    var c = client(); if (!c) return null;
+    var id = kind === 'reports' ? REPORTS_ROW : ANSWERS_ROW;
+    try {
+      var r = await c.from('reports').select('date').eq('id', id).limit(1);
+      var row = r && r.data && r.data[0];
+      if (row && row.date) return normalizeConfig(JSON.parse(row.date));
+    } catch(e) {}
+    return null;
+  }
+  async function saveRemote(kind, cfg){
+    var c = client(); if (!c) return { local:true };
+    var row = makeRow(kind, cfg);
+    var r = await c.from('reports').upsert([row], { onConflict:'id' });
+    if (r && r.error) throw r.error;
+    return { local:false };
+  }
+  async function getReports(){
+    var remote = await readRemote('reports');
+    if (remote && remote.apiKey) { writeLocal(REPORTS_KEY, remote); return remote; }
+    var local = readLocal(REPORTS_KEY);
+    if (local.apiKey) return local;
+    return readLocal(LEGACY_KEY);
+  }
+  async function getAnswers(){
+    var remote = await readRemote('answers');
+    if (remote && remote.apiKey) { writeLocal(ANSWERS_KEY, remote); return remote; }
+    var local = readLocal(ANSWERS_KEY);
+    if (local.apiKey) return local;
+    return readLocal(LEGACY_KEY);
+  }
+  async function saveReports(cfg){ cfg = normalizeConfig(cfg); writeLocal(REPORTS_KEY, cfg); return saveRemote('reports', cfg); }
+  async function saveAnswers(cfg){ cfg = normalizeConfig(cfg); writeLocal(ANSWERS_KEY, cfg); return saveRemote('answers', cfg); }
+
+  window.CH89_V171_AI_CONFIG = { getReports:getReports, getAnswers:getAnswers, saveReports:saveReports, saveAnswers:saveAnswers, normalize:normalizeConfig };
+  window.T73_V167_DEEPSEEK_CONFIG = { get:getReports, save:saveReports, defaults:{ endpoint:DEFAULT_ENDPOINT, model:DEFAULT_MODEL, thinking:true } };
+
+  function ch89CreatorOnlyEmail(){
+    var email = '';
+    try { email = String(((window.currentUser || currentUser || {}) || {}).email || '').trim().toLowerCase(); } catch(e) {}
+    if (!email) return false;
+    try { if (typeof creatorEmail !== 'undefined' && email === String(creatorEmail || '').trim().toLowerCase()) return true; } catch(e) {}
+    return email === 'daniiltimosin72@gmail.com';
+  }
+  function canEdit(){
+    return ch89CreatorOnlyEmail();
+  }
+  function defaultReportInstruction(){
+    return 'Проверяй отчёты модераторов строго по доказательству на скриншоте. Сначала найди фактическое время работы на скриншоте, затем сравни его с заявленным временем. Если время не читается, скриншот не относится к отчёту, есть признаки подделки или доказательство не подтверждает работу — отклоняй и ставь 0 XP. Стандартные пороги: 10–29 минут — Норма, 15 XP; 30–59 минут — Перенорма, 30 XP; 60+ минут — Герой дня, 60 XP; меньше 10 минут — Не выполнено, 0 XP. В reason коротко объясни, что именно найдено и почему отчёт принят или отклонён.';
+  }
+  async function loadReportInstruction(){
+    var local = String(localStorage.getItem(REPORT_INSTRUCTION_LOCAL) || '').trim();
+    var c = client();
+    if (c) {
+      try { var r = await c.from('reports').select('date').eq('id', REPORT_INSTRUCTION_ROW).limit(1); var row = r && r.data && r.data[0]; if (row && row.date) return String(row.date || ''); } catch(e) {}
+    }
+    return local || defaultReportInstruction();
+  }
+  async function saveReportInstruction(text){
+    text = String(text || '').trim();
+    localStorage.setItem(REPORT_INSTRUCTION_LOCAL, text);
+    var c = client();
+    if (!c) return { local:true };
+    var r = await c.from('reports').upsert([{ id:REPORT_INSTRUCTION_ROW, email:SETTINGS_EMAIL, link:'REPORT_CHECK_INSTRUCTION', date:text, status:'active', xp:0 }], { onConflict:'id' });
+    if (r && r.error) throw r.error;
+    return { local:false };
+  }
+  window.CH89_V172_REPORT_INSTRUCTION = { load:loadReportInstruction, save:saveReportInstruction, defaults:defaultReportInstruction };
+
+  async function loadInstruction(){
+    try { if (window.CH89_V170_INSTRUCTION && typeof window.CH89_V170_INSTRUCTION.load === 'function') return await window.CH89_V170_INSTRUCTION.load(); } catch(e) {}
+    var local = String(localStorage.getItem('ch89_instruction_rules_v170_local') || '').trim();
+    var c = client();
+    if (c) {
+      try { var r = await c.from('reports').select('date').eq('id', INSTRUCTION_ROW).limit(1); var row = r && r.data && r.data[0]; if (row && row.date) return String(row.date || ''); } catch(e) {}
+    }
+    return local;
+  }
+  async function saveInstruction(text){
+    text = String(text || '').trim();
+    localStorage.setItem('ch89_instruction_rules_v170_local', text);
+    try { if (window.CH89_V170_INSTRUCTION && typeof window.CH89_V170_INSTRUCTION.save === 'function') return await window.CH89_V170_INSTRUCTION.save(text); } catch(e) {}
+    var c = client();
+    if (!c) return { local:true };
+    var r = await c.from('reports').upsert([{ id:INSTRUCTION_ROW, email:SETTINGS_EMAIL, link:'HELP_INSTRUCTION', date:text, status:'active', xp:0 }], { onConflict:'id' });
+    if (r && r.error) throw r.error;
+    return { local:false };
+  }
+  function renderInstructionPreview(text){
+    var preview = $('ch89PanelInstructionPreview'); if (!preview) return;
+    text = String(text || '').trim();
+    if (!text) { preview.innerHTML = '<span style="color:var(--color-text-muted);">Инструкция ещё не сохранена через панель.</span>'; return; }
+    var lines = text.split('\n').map(function(x){ return x.trim(); }).filter(Boolean).slice(0,4);
+    preview.innerHTML = lines.map(function(line){ return '<div>• '+esc(line.slice(0,170))+(line.length>170?'…':'')+'</div>'; }).join('');
+  }
+  function renderReportInstructionPreview(text){
+    var preview = $('ch89ReportInstructionPreview'); if (!preview) return;
+    text = String(text || '').trim();
+    if (!text) { preview.innerHTML = '<span style="color:var(--color-text-muted);">Инструкция проверки отчётов ещё не сохранена.</span>'; return; }
+    var lines = text.split('\n').map(function(x){ return x.trim(); }).filter(Boolean).slice(0,4);
+    preview.innerHTML = lines.map(function(line){ return '<div>• '+esc(line.slice(0,170))+(line.length>170?'…':'')+'</div>'; }).join('');
+  }
+  function apiCard(kind, title, hint){
+    var prefix = kind === 'reports' ? 'Reports' : 'Answers';
+    return '<div class="ch89-v171-api-card" data-ch89-api-kind="'+kind+'">' +
+      '<h4>'+title+'</h4><p>'+hint+'</p>' +
+      '<div class="ch89-v171-fields">' +
+        '<div class="admin-field"><label>API key</label><input id="ch89'+prefix+'ApiKey" class="support-input" type="password" placeholder="sk-..." autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false"></div>' +
+        '<div class="admin-field"><label>Режим</label><select id="ch89'+prefix+'Model" class="support-input"><option value="deepseek-v4-pro">Точный режим</option><option value="deepseek-v4-flash">Быстрый режим</option><option value="deepseek-reasoner">Совместимый режим</option></select></div>' +
+        '<div class="admin-field endpoint"><label>API endpoint</label><input id="ch89'+prefix+'Endpoint" class="support-input" type="text" value="'+DEFAULT_ENDPOINT+'" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false"></div>' +
+        '<label class="ch89-v171-check"><input id="ch89'+prefix+'Thinking" type="checkbox" checked><span>Включить глубокий анализ</span></label>' +
+      '</div>' +
+      '<div class="ch89-v171-actions"><button class="btn btn-secondary" type="button" id="ch89'+prefix+'Paste">📋 Вставить</button><button class="btn btn-secondary" type="button" id="ch89'+prefix+'Toggle">👁 Показать</button><button class="btn btn-secondary" type="button" id="ch89'+prefix+'Clear">🧹 Очистить</button><button class="btn btn-primary" type="button" id="ch89'+prefix+'Save">💾 Сохранить</button></div>' +
+      '<div class="ch89-v171-status" id="ch89'+prefix+'Status">Ключ не настроен.</div>' +
+    '</div>';
+  }
+  function panelHtml(){
+    return '<div class="ch89-v171-panel-head"><div><h3>⚙️ AI-настройки сайта</h3><p>Ключи и инструкции разделены: отчёты проверяются своим API и своей инструкцией, ответы в /help — своим API и своей инструкцией. Редакторы и AI-настройки доступны только создателю; модераторам название сервиса и модель не показываются.</p></div><span class="ch89-v171-badge">Cherepovets 89</span></div>' +
+      '<div class="ch89-v171-api-grid">' +
+        apiCard('reports','🧾 API для проверки отчётов','Используется только при кнопке «Проверить отчёт и зачесть XP». Работает по отдельной инструкции ниже.') +
+        apiCard('answers','💬 API для ответов по инструкции','Используется только в разделе «Инструкция», когда модератор задаёт вопрос AI-помощнику.') +
+      '</div>' +
+      '<div class="ch89-v171-instruction-panel"><h4>🧾 Инструкция для проверки отчётов</h4><p>Эта инструкция используется только автопроверкой отчётов: нормы времени, XP, причины отклонения, что считать доказательством. Редактирование доступно только создателю.</p><textarea id="ch89ReportInstructionText" class="support-input" placeholder="Введите правила проверки отчётов: нормы, XP, что принимать и что отклонять..."></textarea><div class="ch89-v171-actions"><button class="btn btn-secondary" type="button" id="ch89ReportInstructionLoad">↻ Загрузить из базы</button><button class="btn btn-primary" type="button" id="ch89ReportInstructionSave">💾 Сохранить инструкцию проверки</button></div><div class="ch89-v171-status" id="ch89ReportInstructionStatus"></div><div id="ch89ReportInstructionPreview" style="display:grid;gap:.35rem;color:#edf3ff;line-height:1.45;"></div></div>' +
+      '<div class="ch89-v171-instruction-panel"><h4>📘 Инструкция для ответов и /help</h4><p>Этот текст используется на странице /help и в ответах AI-помощника. Редактирование доступно только создателю.</p><textarea id="ch89PanelInstructionText" class="support-input" placeholder="Введите актуальную инструкцию для модерации..."></textarea><div class="ch89-v171-actions"><button class="btn btn-secondary" type="button" id="ch89PanelInstructionLoad">↻ Загрузить из базы</button><button class="btn btn-primary" type="button" id="ch89PanelInstructionSave">💾 Сохранить инструкцию</button></div><div class="ch89-v171-status" id="ch89PanelInstructionStatus"></div><div id="ch89PanelInstructionPreview" style="display:grid;gap:.35rem;color:#edf3ff;line-height:1.45;"></div></div>';
+  }
+  function setStatus(id, text, state){ var el=$(id); if(!el) return; el.classList.remove('ok','bad'); if(state==='ok') el.classList.add('ok'); if(state==='bad') el.classList.add('bad'); el.textContent=text || ''; }
+  function getField(prefix){ return normalizeConfig({ apiKey: $('ch89'+prefix+'ApiKey') ? $('ch89'+prefix+'ApiKey').value : '', endpoint: $('ch89'+prefix+'Endpoint') ? $('ch89'+prefix+'Endpoint').value : DEFAULT_ENDPOINT, model: $('ch89'+prefix+'Model') ? $('ch89'+prefix+'Model').value : DEFAULT_MODEL, thinking: $('ch89'+prefix+'Thinking') ? !!$('ch89'+prefix+'Thinking').checked : true }); }
+  function setField(prefix, cfg){ cfg=normalizeConfig(cfg); if($('ch89'+prefix+'ApiKey') && !$('ch89'+prefix+'ApiKey').value) $('ch89'+prefix+'ApiKey').value=cfg.apiKey||''; if($('ch89'+prefix+'Endpoint')) $('ch89'+prefix+'Endpoint').value=cfg.endpoint; if($('ch89'+prefix+'Model')) $('ch89'+prefix+'Model').value=cfg.model; if($('ch89'+prefix+'Thinking')) $('ch89'+prefix+'Thinking').checked=!!cfg.thinking; }
+  async function initApi(kind){
+    var prefix = kind === 'reports' ? 'Reports' : 'Answers';
+    var cfg = kind === 'reports' ? await getReports() : await getAnswers();
+    setField(prefix, cfg);
+    setStatus('ch89'+prefix+'Status', cfg.apiKey ? 'Ключ настроен и будет использоваться для этого раздела.' : 'Ключ не настроен. Сохраните отдельный API для этого раздела.', cfg.apiKey ? 'ok' : 'bad');
+    var paste=$('ch89'+prefix+'Paste'), toggle=$('ch89'+prefix+'Toggle'), clear=$('ch89'+prefix+'Clear'), save=$('ch89'+prefix+'Save'), key=$('ch89'+prefix+'ApiKey');
+    if(paste && paste.dataset.bound!=='1'){ paste.dataset.bound='1'; paste.onclick=async function(){ try { if(!navigator.clipboard) throw new Error('Буфер обмена недоступен.'); var text=await navigator.clipboard.readText(); if(key) key.value=String(text||'').trim(); setStatus('ch89'+prefix+'Status','Ключ вставлен. Нажмите «Сохранить».','ok'); } catch(e){ setStatus('ch89'+prefix+'Status','Не удалось вставить ключ: '+(e.message||e),'bad'); } }; }
+    if(toggle && toggle.dataset.bound!=='1'){ toggle.dataset.bound='1'; toggle.onclick=function(){ if(!key) return; key.type = key.type === 'password' ? 'text' : 'password'; toggle.textContent = key.type === 'password' ? '👁 Показать' : '🙈 Скрыть'; }; }
+    if(clear && clear.dataset.bound!=='1'){ clear.dataset.bound='1'; clear.onclick=function(){ if(key) key.value=''; setStatus('ch89'+prefix+'Status','Поле очищено. Чтобы убрать ключ из базы, нажмите «Сохранить».','bad'); }; }
+    if(save && save.dataset.bound!=='1'){ save.dataset.bound='1'; save.onclick=async function(){ if(!canEdit()){ setStatus('ch89'+prefix+'Status','Недостаточно прав для изменения настроек.','bad'); return; } var cfg=getField(prefix); var old=save.textContent; save.disabled=true; save.textContent='Сохраняю...'; try { var r = kind === 'reports' ? await saveReports(cfg) : await saveAnswers(cfg); setStatus('ch89'+prefix+'Status', r.local ? 'Сохранено локально. База временно недоступна.' : 'Сохранено в базе. Этот API теперь используется отдельно.', cfg.apiKey ? 'ok' : 'bad'); } catch(e){ setStatus('ch89'+prefix+'Status','Ошибка сохранения: '+(e.message||e),'bad'); } finally { save.disabled=false; save.textContent=old || '💾 Сохранить'; } }; }
+  }
+  async function initReportInstruction(){
+    var area=$('ch89ReportInstructionText'), load=$('ch89ReportInstructionLoad'), save=$('ch89ReportInstructionSave');
+    if(!area) return;
+    try { var text=await loadReportInstruction(); area.value=String(text||''); renderReportInstructionPreview(text); setStatus('ch89ReportInstructionStatus', text ? 'Инструкция проверки отчётов загружена.' : 'Инструкция проверки отчётов пока пустая.', text ? 'ok' : 'bad'); } catch(e){ setStatus('ch89ReportInstructionStatus','Не удалось загрузить инструкцию проверки: '+(e.message||e),'bad'); }
+    if(load && load.dataset.bound!=='1'){ load.dataset.bound='1'; load.onclick=async function(){ try { var text=await loadReportInstruction(); area.value=String(text||''); renderReportInstructionPreview(text); setStatus('ch89ReportInstructionStatus','Инструкция проверки загружена из базы.','ok'); } catch(e){ setStatus('ch89ReportInstructionStatus','Ошибка загрузки: '+(e.message||e),'bad'); } }; }
+    if(save && save.dataset.bound!=='1'){ save.dataset.bound='1'; save.onclick=async function(){ if(!canEdit()){ setStatus('ch89ReportInstructionStatus','Недостаточно прав для редактирования инструкции проверки.','bad'); return; } var text=String(area.value||'').trim(); if(!text){ setStatus('ch89ReportInstructionStatus','Нельзя сохранить пустую инструкцию проверки.','bad'); return; } var old=save.textContent; save.disabled=true; save.textContent='Сохраняю...'; try { var r=await saveReportInstruction(text); renderReportInstructionPreview(text); setStatus('ch89ReportInstructionStatus', r && r.local ? 'Сохранено локально. База временно недоступна.' : 'Инструкция проверки сохранена в базе и используется автопроверкой отчётов.', 'ok'); } catch(e){ setStatus('ch89ReportInstructionStatus','Ошибка сохранения: '+(e.message||e),'bad'); } finally { save.disabled=false; save.textContent=old || '💾 Сохранить инструкцию проверки'; } }; }
+  }
+  async function initInstruction(){
+    var area=$('ch89PanelInstructionText'), load=$('ch89PanelInstructionLoad'), save=$('ch89PanelInstructionSave');
+    if(!area) return;
+    try { var text=await loadInstruction(); area.value=String(text||''); renderInstructionPreview(text); setStatus('ch89PanelInstructionStatus', text ? 'Инструкция загружена.' : 'Инструкция пока пустая.', text ? 'ok' : 'bad'); } catch(e){ setStatus('ch89PanelInstructionStatus','Не удалось загрузить инструкцию: '+(e.message||e),'bad'); }
+    if(load && load.dataset.bound!=='1'){ load.dataset.bound='1'; load.onclick=async function(){ try { var text=await loadInstruction(); area.value=String(text||''); renderInstructionPreview(text); setStatus('ch89PanelInstructionStatus','Инструкция загружена из базы.','ok'); } catch(e){ setStatus('ch89PanelInstructionStatus','Ошибка загрузки: '+(e.message||e),'bad'); } }; }
+    if(save && save.dataset.bound!=='1'){ save.dataset.bound='1'; save.onclick=async function(){ if(!canEdit()){ setStatus('ch89PanelInstructionStatus','Недостаточно прав для редактирования инструкции.','bad'); return; } var text=String(area.value||'').trim(); if(!text){ setStatus('ch89PanelInstructionStatus','Нельзя сохранить пустую инструкцию.','bad'); return; } var old=save.textContent; save.disabled=true; save.textContent='Сохраняю...'; try { var r=await saveInstruction(text); renderInstructionPreview(text); try { if(window.CH89_V170_INSTRUCTION && typeof window.CH89_V170_INSTRUCTION.refresh === 'function') window.CH89_V170_INSTRUCTION.refresh(); } catch(e){} setStatus('ch89PanelInstructionStatus', r && r.local ? 'Сохранено локально. База временно недоступна.' : 'Инструкция сохранена в базе и используется на /help.', 'ok'); } catch(e){ setStatus('ch89PanelInstructionStatus','Ошибка сохранения: '+(e.message||e),'bad'); } finally { save.disabled=false; save.textContent=old || '💾 Сохранить инструкцию'; } }; }
+  }
+  function patchLabels(){
+    var aiStatus = $('t73AiChatStatus'); if(aiStatus && /DeepSeek|Gemini|модель/i.test(aiStatus.textContent || '')) aiStatus.textContent = 'Для ответов используется отдельный API из панели управления.';
+    var box = $('t73V154GeminiBox'); if(box){ var title = box.querySelector('.t73-v154-ai-title span'); if(title) title.textContent='Автопроверка отчёта'; var pill = box.querySelector('.t73-v154-pill'); if(pill) pill.remove(); }
+  }
+  function boot(){
+    var panel = $('t73CreatorDeepSeekSettings');
+    if(panel && panel.dataset.ch89v171Panel !== '1') { panel.dataset.ch89v171Panel='1'; panel.innerHTML = panelHtml(); }
+    if(panel){ initApi('reports'); initApi('answers'); initReportInstruction(); initInstruction(); }
+    patchLabels();
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+  [250,800,1800,3600,6500].forEach(function(ms){ setTimeout(boot, ms); });
+  try { new MutationObserver(function(){ clearTimeout(window.__CH89_V171_PANEL_TIMER__); window.__CH89_V171_PANEL_TIMER__ = setTimeout(boot, 120); }).observe(document.documentElement, { childList:true, subtree:true }); } catch(e) {}
+})();
+</script>
+<!-- === /CH89 V171 separate AI APIs + panel instruction editor === -->
+
+
+<!-- === CH89 V173: creator-only editors hardening === -->
+<style id="ch89-v173-creator-only-editors-style">
+  body:not(.ch89-creator-session) #ch89InstructionEditBtn,
+  body:not(.ch89-creator-session) #ch89InstructionEditor,
+  body:not(.ch89-creator-session) #ch89PanelInstructionText,
+  body:not(.ch89-creator-session) #ch89ReportInstructionText,
+  body:not(.ch89-creator-session) #ch89PanelInstructionSave,
+  body:not(.ch89-creator-session) #ch89ReportInstructionSave,
+  body:not(.ch89-creator-session) #ch89ReportsApiKey,
+  body:not(.ch89-creator-session) #ch89AnswersApiKey,
+  body:not(.ch89-creator-session) #ch89ReportsSave,
+  body:not(.ch89-creator-session) #ch89AnswersSave,
+  body:not(.ch89-creator-session) #ch89ReportsPaste,
+  body:not(.ch89-creator-session) #ch89AnswersPaste,
+  body:not(.ch89-creator-session) #ch89ReportsToggle,
+  body:not(.ch89-creator-session) #ch89AnswersToggle,
+  body:not(.ch89-creator-session) #ch89ReportsClear,
+  body:not(.ch89-creator-session) #ch89AnswersClear { display:none !important; }
+</style>
+<script id="ch89-v173-creator-only-editors-script">
+(function(){
+  'use strict';
+  if (window.__CH89_V173_CREATOR_ONLY_EDITORS__) return;
+  window.__CH89_V173_CREATOR_ONLY_EDITORS__ = true;
+  var CREATOR_EMAIL = 'daniiltimosin72@gmail.com';
+  function getEmail(){
+    try { return String(((window.currentUser || currentUser || {}) || {}).email || '').trim().toLowerCase(); } catch(e) { return ''; }
+  }
+  function isCreator(){
+    var email = getEmail();
+    if (!email) return false;
+    try { if (typeof creatorEmail !== 'undefined' && email === String(creatorEmail || '').trim().toLowerCase()) return true; } catch(e) {}
+    return email === CREATOR_EMAIL;
+  }
+  function guardEditors(){
+    var ok = isCreator();
+    document.body.classList.toggle('ch89-creator-session', ok);
+    ['ch89InstructionEditBtn','ch89InstructionSaveBtn','ch89PanelInstructionSave','ch89ReportInstructionSave','ch89ReportsSave','ch89AnswersSave'].forEach(function(id){
+      var el = document.getElementById(id);
+      if (!el || el.dataset.ch89V173Guard === '1') return;
+      el.dataset.ch89V173Guard = '1';
+      el.addEventListener('click', function(ev){
+        if (isCreator()) return;
+        ev.preventDefault();
+        ev.stopImmediatePropagation();
+        alert('Этот редактор доступен только создателю.');
+        return false;
+      }, true);
+    });
+    var hint = document.getElementById('ch89CreatorOnlyEditorHint');
+    var block = document.getElementById('ch89EditableInstructionBlock');
+    if (!ok && block && !hint) {
+      block.insertAdjacentHTML('beforeend','<div id="ch89CreatorOnlyEditorHint" class="ch89-v170-status">Редактор скрыт. Изменять инструкцию может только создатель.</div>');
+    } else if (ok && hint) {
+      hint.remove();
+    }
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', guardEditors); else guardEditors();
+  [250,800,1600,3200,6500].forEach(function(ms){ setTimeout(guardEditors, ms); });
+  try { new MutationObserver(function(){ clearTimeout(window.__CH89_V173_EDITOR_GUARD_TIMER__); window.__CH89_V173_EDITOR_GUARD_TIMER__ = setTimeout(guardEditors, 80); }).observe(document.documentElement, { childList:true, subtree:true }); } catch(e) {}
+})();
+</script>
+<!-- === /CH89 V173 creator-only editors hardening === -->
 
 </body>
 </html>
