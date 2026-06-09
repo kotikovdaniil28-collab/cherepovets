@@ -45,7 +45,7 @@
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; }
+    html { scroll-behavior: auto; }
 
     body {
       min-height: 100dvh; font-family: var(--font-body); font-size: var(--text-base); color: var(--color-text);
@@ -18619,36 +18619,18 @@ body.t73-v44-cat-organizations #gossOrgActionNavV4.t73-v44-goss-actions{display:
 
   function ensureButtonV63() {
     const form = $('reportFormArea');
-    const admin = $('adminPanelArea') || form;
     let list = $('reportsListArea');
     if (form && !list) {
       form.insertAdjacentHTML('beforeend', '<div id="reportsListArea" style="display:none;"></div>');
       list = $('reportsListArea');
     }
 
-    let btn = $('viewReportsBtnV63');
-    const old = $('viewReportsBtn');
-    if (!btn && old) {
-      btn = old.cloneNode(true);
-      btn.id = 'viewReportsBtnV63';
-      btn.removeAttribute('onclick');
-      old.replaceWith(btn);
-    }
-    if (!btn && admin) {
-      admin.insertAdjacentHTML('beforeend', '<button class="support-check-btn" type="button" id="viewReportsBtnV63">Проверить отчётность</button>');
-      btn = $('viewReportsBtnV63');
-    }
-    if (btn) {
-      btn.textContent = 'Проверить отчётность';
-      btn.type = 'button';
-      btn.removeAttribute('onclick');
-      btn.onclick = function(e){ e.preventDefault(); e.stopPropagation(); toggleReportsV63(); return false; };
-      if (admin && btn.parentElement !== admin) admin.appendChild(btn);
-      if (!$('reportCheckLogBox') && btn.parentElement) {
-        btn.insertAdjacentHTML('afterend', '<div id="reportCheckLogBox"><div class="t73-v161-log-head"><div><h3>🧾 Лог проверки отчётности</h3><p>Показывает, что именно произошло после нажатия кнопки: подключение, загрузка, фильтр, количество отчётов и ошибки.</p></div><span id="reportCheckLogBadge">готово</span></div><div id="reportCheckLogItems"><div class="t73-v161-log-line"><span class="t73-v161-log-time">—</span><span>Нажмите «Проверить отчётность», чтобы открыть список и увидеть ход проверки.</span></div></div></div>');
-      }
-      if (form && list && admin && list.previousElementSibling !== admin) admin.insertAdjacentElement('afterend', list);
-    }
+    // Старый V63 создавал вторую белую кнопку «Проверить отчётность» и отдельный лог.
+    // В рабочей версии проверка открывается только жёлтой кнопкой #ch89StableReviewReportsBtn.
+    ['viewReportsBtnV63','viewReportsBtn','reportCheckLogBox'].forEach(id => {
+      const el = $(id);
+      if (el && el.parentElement) el.parentElement.removeChild(el);
+    });
   }
 
   function refreshAfterSubmitV63() {
@@ -18682,8 +18664,7 @@ body.t73-v44-cat-organizations #gossOrgActionNavV4.t73-v44-goss-actions{display:
   document.addEventListener('click', function(event){
     const process = event.target && event.target.closest && event.target.closest('[data-v63-process]');
     if (process) { event.preventDefault(); event.stopPropagation(); event.stopImmediatePropagation(); processV63(process); return; }
-    const btn = event.target && event.target.closest && event.target.closest('#viewReportsBtnV63,#viewReportsBtn');
-    if (btn) { event.preventDefault(); event.stopPropagation(); event.stopImmediatePropagation(); toggleReportsV63(); return; }
+    // Кнопки открытия V63 отключены, чтобы не было дубля проверки отчётности.
   }, true);
 
   function boot() { ensureButtonV63(); watchSubmitResultV63(); }
@@ -23739,6 +23720,8 @@ body.t73-v44-cat-organizations #gossOrgActionNavV4.t73-v44-goss-actions{display:
     return $('reportFileInputV62') || $('reportFileInput') || document.querySelector('#reportFormArea input[type="file"]') || document.querySelector('#mode-report input[type="file"]');
   }
   function selectedFileCount(){
+    var stable = $('ch89StablePhotoCount');
+    if (stable && /выбран/i.test(String(stable.textContent || ''))) return 1;
     var n = 0;
     var inp = primaryReportFileInput();
     if (inp && inp.files) n += inp.files.length;
@@ -23751,6 +23734,8 @@ body.t73-v44-cat-organizations #gossOrgActionNavV4.t73-v44-goss-actions{display:
   function updatePhotoCount(){
     var c = $('t73V131PhotoCount');
     if (!c) return;
+    var stable = $('ch89StablePhotoCount');
+    if (stable && String(stable.textContent || '').trim()) { c.textContent = stable.textContent; return; }
     var n = selectedFileCount();
     c.textContent = n ? ('Выбрано фото: ' + n) : 'Фото не выбрано';
   }
@@ -25981,7 +25966,7 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
   .ch89-stable-norm-select { width:100%; border-radius:12px; border:1px solid rgba(255,255,255,.18); background:#111827; color:#fff; padding:.65rem .75rem; font-weight:900; outline:none; }
 
   /* общая стабилизация: без 3D-прыжков, без бесконечной тряски, только лёгкое затемнение/свечение */
-  html { scroll-behavior: smooth; }
+  html { scroll-behavior: auto; }
   .game-card,
   .panel,
   .mode-btn,
@@ -25998,12 +25983,17 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
   .game-card:hover,
   .panel:hover,
   .mode-btn:hover,
+  .btn:hover,
+  button:hover,
+  .support-check-btn:hover,
   .shop-item:hover,
   .mod-report-card:hover,
   .t73-v94-review-card:hover,
   .t73-v94-inactive-card:hover,
   .ch89-stable-review-card:hover {
     transform: none !important;
+    translate: none !important;
+    scale: none !important;
   }
   .btn,
   .mode-btn,
@@ -26273,7 +26263,7 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
     if (!u || !u.email) { setResult('Сначала войдите в аккаунт.', false); return false; }
     if (!c) { setResult('База ещё не загрузилась. Обновите страницу и попробуйте ещё раз.', false); return false; }
     if (!nick || !date || !claimed) { setResult('Заполните ник, дату и заявленное время работы.', false); return false; }
-    if (!reportFiles.length) { setResult('Выберите скриншот JPG, PNG или WebP. Ссылка может быть дополнением, но не заменяет скриншот.', false); return false; }
+    if (!reportFiles.length) { setResult('Загрузите скриншот JPG, PNG или WebP через кнопку «Загрузить фото напрямую». Ссылка может быть дополнением, но не заменяет скриншот.', false); return false; }
     busy = true; var oldText = btn && btn.textContent; if (btn) { btn.disabled = true; btn.textContent = 'Проверяю и передаю руководству...'; }
     logReset(); logLine('📎','Скриншот принят. Сжимаю изображение перед отправкой.','ok'); setResult('AI проверяет отчёт. XP не будет начислен автоматически...', true);
     try {
@@ -26357,7 +26347,7 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
     var work = p.work || p.comment || p.raw || '';
     var statusCls = statusClass(status, row.xp);
     var normOptions = NORMS.map(function(n){ return '<option value="'+n.value+'" '+(suggested===n.value?'selected':'')+'>'+n.value+' · '+n.xp+' XP</option>'; }).join('');
-    var actions = pending ? '<select class="ch89-stable-norm-select" data-stable-norm="'+esc(row.id)+'">'+normOptions+'</select><div class="ch89-stable-actions"><button class="btn btn-secondary" style="border-color:#ffbf47;color:#ffdf91" type="button" data-stable-change-norm="'+esc(row.id)+'">Поменять тип нормы</button><button class="btn btn-secondary" style="border-color:#52c77b;color:#7fe8a0" type="button" data-stable-issue-xp="'+esc(row.id)+'">Выдать ХП</button><button class="btn btn-secondary" style="border-color:var(--color-error);color:var(--color-error)" type="button" data-stable-reject="'+esc(row.id)+'">Отказать</button></div>' : '<div class="ch89-stable-muted">Решение уже сохранено. В таблицу выставлено: '+esc(status)+' · '+Number(row.xp || 0)+' XP.</div>';
+    var actions = pending ? '<select class="ch89-stable-norm-select" data-stable-norm="'+esc(row.id)+'">'+normOptions+'</select><div class="ch89-stable-actions"><button class="btn btn-secondary" style="border-color:#ffbf47;color:#ffdf91" type="button" data-stable-change-norm="'+esc(row.id)+'">Поменять тип нормы</button><button class="btn btn-secondary" style="border-color:#52c77b;color:#7fe8a0" type="button" data-stable-issue-xp="'+esc(row.id)+'">Выдать ХР</button><button class="btn btn-secondary" style="border-color:var(--color-error);color:var(--color-error)" type="button" data-stable-reject="'+esc(row.id)+'">Отказать</button></div>' : '<div class="ch89-stable-muted">Решение уже сохранено. В таблицу выставлено: '+esc(status)+' · '+Number(row.xp || 0)+' XP.</div>';
     return '<article class="ch89-stable-review-card" data-stable-card="'+esc(row.id)+'"><div class="ch89-stable-review-head"><div><strong>'+esc(nick)+'</strong><div class="ch89-stable-muted">'+esc(date)+' · '+esc(row.email || '')+'</div></div><span class="ch89-stable-pill '+statusCls+'">'+esc(status)+' · '+Number(row.xp || 0)+' XP</span></div><div class="ch89-stable-muted">'+esc(work || 'Комментарий не указан')+'</div>'+proofHtml(row,p)+aiHtml(p)+actions+'</article>';
   }
   async function renderReview(){
@@ -26414,9 +26404,9 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
     ['viewReportsBtnV63','viewReportsBtn','reportsTableBtn','govV4CheckReportsBtn','t73V146ReportHint'].forEach(function(id){ var el=$(id); if(el){ el.style.setProperty('display','none','important'); el.style.setProperty('visibility','hidden','important'); el.style.setProperty('pointer-events','none','important'); } });
     var direct = $('t73V131DirectUploadRow');
     if (direct && direct.parentElement) direct.parentElement.removeChild(direct);
-    qsa('button').forEach(function(btn){
+    qsa('button,a,[role="button"],.btn,.mode-btn').forEach(function(btn){
       var txt = String(btn.textContent || '').replace(/\s+/g,' ').trim().toLowerCase();
-      if (btn.id !== 'ch89StableReviewReportsBtn' && /проверить\s+(сданные\s+)?отч[её]т/.test(txt)) {
+      if (btn.id !== 'ch89StableReviewReportsBtn' && /проверить[\s\S]{0,60}отч[её]т/.test(txt)) {
         btn.style.setProperty('display','none','important');
         btn.style.setProperty('visibility','hidden','important');
         btn.style.setProperty('pointer-events','none','important');
@@ -26434,7 +26424,7 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
       }
       if (!$('ch89StableReportBox')) {
         var place = ($('reportLinkInput') && $('reportLinkInput').closest && $('reportLinkInput').closest('.admin-field')) || $('reportClaimedTimeField') || form;
-        place.insertAdjacentHTML('afterend','<div id="ch89StableReportBox"><div class="ch89-stable-report-title"><span>AI проверка без автозачёта</span><span class="ch89-stable-pill pending">У Руководства</span></div><div class="ch89-stable-report-help">AI проверяет скриншот и пишет рекомендацию. Ссылка может быть дополнением, но скриншот выбирается здесь.</div><div class="admin-field ch89-stable-upload-field"><label>Скриншот для проверки:</label><input id="ch89StableReportFileInput" class="support-input" type="file" accept="image/*,.png,.jpg,.jpeg,.webp"><button id="ch89StablePickFileBtn" type="button">📎 Выбрать скриншот JPG / PNG / WebP</button><div id="ch89StablePhotoCount">Фото не выбрано</div><div id="ch89StableReportPreview"></div></div><button id="ch89StableSubmitReportBtn" type="button">Проверить AI и отправить руководству</button><div id="ch89StableReportLog"></div></div>');
+        place.insertAdjacentHTML('afterend','<div id="ch89StableReportBox"><div class="ch89-stable-report-title"><span>AI проверка без автозачёта</span><span class="ch89-stable-pill pending">У Руководства</span></div><div class="ch89-stable-report-help">AI проверяет скриншот и пишет рекомендацию. Ссылка может быть дополнением, но скриншот выбирается здесь.</div><div class="admin-field ch89-stable-upload-field"><label>Скриншот для проверки:</label><input id="ch89StableReportFileInput" class="support-input" type="file" accept="image/*,.png,.jpg,.jpeg,.webp"><button id="ch89StablePickFileBtn" type="button">📎 Загрузить фото напрямую</button><div id="ch89StablePhotoCount">Фото не выбрано</div><div id="ch89StableReportPreview"></div></div><button id="ch89StableSubmitReportBtn" type="button">Проверить AI и отправить руководству</button><div id="ch89StableReportLog"></div></div>');
       }
       renderPreview();
     }
@@ -29966,7 +29956,14 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
   function hideDuplicates(){
     ['viewReportsBtnV63','viewReportsBtn','reportsTableBtn','govV4CheckReportsBtn','t73V146ReportHint','t73V131DirectUploadRow'].forEach(function(id){ var el=$(id); if(el){ el.style.setProperty('display','none','important'); el.style.setProperty('visibility','hidden','important'); el.style.setProperty('pointer-events','none','important'); } });
     document.querySelectorAll('.t73-v146-check-bottom').forEach(function(el){ el.style.setProperty('display','none','important'); });
-    document.querySelectorAll('button').forEach(function(btn){ var txt=String(btn.textContent||'').replace(/\s+/g,' ').trim().toLowerCase(); if(btn.id !== 'ch89StableReviewReportsBtn' && /проверить\s+(сданные\s+)?отч[её]т/.test(txt)){ btn.style.setProperty('display','none','important'); btn.style.setProperty('visibility','hidden','important'); btn.style.setProperty('pointer-events','none','important'); } });
+    document.querySelectorAll('button,a,[role="button"],.btn,.mode-btn').forEach(function(btn){
+      var txt=String(btn.textContent||'').replace(/\s+/g,' ').trim().toLowerCase();
+      if(btn.id !== 'ch89StableReviewReportsBtn' && /проверить[\s\S]{0,60}отч[её]т/.test(txt)){
+        btn.style.setProperty('display','none','important');
+        btn.style.setProperty('visibility','hidden','important');
+        btn.style.setProperty('pointer-events','none','important');
+      }
+    });
     var stable = $('ch89StableReviewReportsBtn');
     if (stable) { stable.type='button'; stable.textContent='Проверить отчётность'; stable.classList.add('btn','btn-primary'); }
   }
@@ -29977,7 +29974,7 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
     var stable = $('ch89StableReviewReportsBtn');
     if (stable) stable.style.setProperty('display', ok ? 'inline-flex' : 'none', 'important');
     var gossReports = document.querySelectorAll('#gossOrgActionNavV4 [data-view="reports"], #subNavModeration #v25ModViewReportsBtn');
-    gossReports.forEach(function(b){ b.style.setProperty('display', ok ? 'inline-flex' : 'none', 'important'); });
+    gossReports.forEach(function(b){ b.style.setProperty('display', 'none', 'important'); b.style.setProperty('visibility','hidden','important'); b.style.setProperty('pointer-events','none','important'); });
   }
   function boot(){ hideDuplicates(); clearTimeout(window.__CH89_V173_REFRESH__); window.__CH89_V173_REFRESH__ = setTimeout(refresh, 120); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
