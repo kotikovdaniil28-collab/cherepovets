@@ -1303,8 +1303,68 @@
 </style>
 <!-- === /CH89 ENTRY AUTH GATE === -->
 
+
+<!-- === CH89 V173: stable entry, smoother animations, single report-review button === -->
+<style id="ch89-v173-stability-style">
+  body.ch89-session-checking #ch89EntryAuthGate { display:flex !important; }
+  body.ch89-session-checking #ch89EntryAuthGate .ch89-auth-tabs,
+  body.ch89-session-checking #ch89EntryAuthGate .ch89-auth-form { display:none !important; }
+  body.ch89-session-checking #ch89EntryAuthGate .ch89-auth-card h2::after { content:' — проверка'; color:#ffbf47; }
+  body.ch89-session-checking #ch89AuthSubtitle { visibility:hidden; position:relative; }
+  body.ch89-session-checking #ch89AuthSubtitle::after { content:'Сначала проверяется сохранённый аккаунт. Если вход уже выполнен, форма входа не мигает и сразу открывается сайт.'; visibility:visible; position:absolute; inset:0; color:rgba(226,232,255,.72); }
+  #ch89EntryAuthGate .ch89-auth-loader {
+    display:grid; width:100%; max-width:100%; padding:0; border:0; background:transparent; color:#eef4ff; border-radius:0; font:inherit;
+  }
+  #ch89EntryAuthGate .ch89-auto-login-demo {
+    display:grid; gap:.85rem; padding:1rem; border-radius:20px; border:1px solid rgba(255,191,71,.22);
+    background:linear-gradient(145deg, rgba(255,191,71,.10), rgba(118,167,255,.065)), rgba(0,0,0,.20);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.07);
+  }
+  #ch89EntryAuthGate .ch89-auto-login-title { display:flex; align-items:center; gap:.7rem; color:#fff; font-weight:900; }
+  #ch89EntryAuthGate .ch89-auto-login-grid { display:grid; gap:.55rem; }
+  #ch89EntryAuthGate .ch89-auto-login-grid div {
+    display:grid; grid-template-columns:74px minmax(0,1fr); gap:.65rem; align-items:center; min-height:38px; padding:.52rem .65rem;
+    border-radius:14px; border:1px solid rgba(255,255,255,.11); background:rgba(0,0,0,.28);
+  }
+  #ch89EntryAuthGate .ch89-auto-login-grid span { color:rgba(226,232,255,.58); font-size:.78rem; font-weight:900; text-transform:uppercase; letter-spacing:.04em; }
+  #ch89EntryAuthGate .ch89-auto-login-grid b { color:#fff; font-weight:900; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; min-height:1.1em; }
+  #ch89EntryAuthGate .ch89-auto-login-grid b::after { content:'▌'; color:#ffbf47; margin-left:.15rem; animation:ch89Caret .85s steps(1,end) infinite; }
+  #ch89EntryAuthGate .ch89-auto-login-bar { height:6px; border-radius:999px; overflow:hidden; background:rgba(255,255,255,.08); }
+  #ch89EntryAuthGate .ch89-auto-login-bar i { display:block; width:42%; height:100%; border-radius:inherit; background:linear-gradient(90deg,#ff6b88,#ffbf47,#69e4ff); animation:ch89AutoBar 1.7s ease-in-out infinite; }
+  @keyframes ch89Caret { 50% { opacity:0; } }
+  @keyframes ch89AutoBar { 0% { transform:translateX(-110%); } 55% { transform:translateX(70%); } 100% { transform:translateX(250%); } }
+
+  /* Стабилизация интерфейса: без прыжков/3D на hover, только мягкая подсветка. */
+  .page, .game-card, .panel, .message-card, .mod-report-card, .support-section, .stat, .shop-item,
+  .t73-v120-card, .t73-v165-card, .ch89-stable-review-card { transform:none !important; perspective:none !important; transform-style:flat !important; will-change:auto !important; }
+  .game-card:hover, .panel:hover, .message-card:hover, .mod-report-card:hover, .support-section:hover, .stat:hover, .shop-item:hover,
+  .t73-v120-card:hover, .t73-v165-card:hover, .ch89-stable-review-card:hover { transform:none !important; translate:none !important; }
+  .btn, button, .mode-btn, .support-input, select, textarea {
+    transition:border-color .18s ease, background-color .18s ease, color .18s ease, box-shadow .18s ease, opacity .18s ease, filter .18s ease !important;
+    will-change:auto !important;
+  }
+  .btn:hover, button:hover, .mode-btn:hover { transform:none !important; filter:brightness(1.045); }
+  .btn:active, button:active, .mode-btn:active { transform:none !important; filter:brightness(.98); }
+
+  /* Проверка отчётности: оставляем одну кнопку и только для руководства. */
+  #viewReportsBtnV63,
+  #viewReportsBtn,
+  #govV4CheckReportsBtn,
+  .t73-v146-check-bottom,
+  #t73V146ReportHint { display:none !important; }
+  body:not(.ch89-report-leader-on) #ch89StableReviewReportsBtn,
+  body:not(.ch89-report-leader-on) #gossOrgActionNavV4 [data-view="reports"],
+  body:not(.ch89-report-leader-on) #subNavModeration #v25ModViewReportsBtn { display:none !important; }
+  body.ch89-report-leader-on #ch89StableReviewReportsBtn { display:inline-flex !important; width:100%; justify-content:center; }
+  @media (prefers-reduced-motion: reduce) {
+    #ch89EntryAuthGate .ch89-auto-login-bar i, #ch89EntryAuthGate .ch89-auto-login-grid b::after { animation:none !important; }
+    .btn, button, .mode-btn, .support-input, select, textarea { transition:none !important; }
+  }
+</style>
+<!-- === /CH89 V173 === -->
+
 </head>
-<body class="ch89-auth-lock">
+<body class="ch89-auth-lock ch89-session-checking">
 
   <div id="ch89EntryAuthGate" role="dialog" aria-modal="true" aria-labelledby="ch89AuthTitle">
     <div class="ch89-auth-shell">
@@ -1358,7 +1418,17 @@
           </div>
           <p class="ch89-auth-footnote">Гостевой вход отключён, чтобы не терялись отчёты, XP и настройки профиля.</p>
         </div>
-        <div class="ch89-auth-loader" id="ch89AuthLoader"><span class="ch89-auth-dot"></span> Проверяю сессию...</div>
+        <div class="ch89-auth-loader" id="ch89AuthLoader">
+          <div class="ch89-auto-login-demo" aria-live="polite">
+            <div class="ch89-auto-login-title"><span class="ch89-auth-dot"></span><span>Проверяю активную сессию...</span></div>
+            <div class="ch89-auto-login-grid">
+              <div><span>Email</span><b id="ch89AutoLoginEmail"></b></div>
+              <div><span>Пароль</span><b id="ch89AutoLoginPass"></b></div>
+              <div><span>Статус</span><b id="ch89AutoLoginState">ожидание ответа</b></div>
+            </div>
+            <div class="ch89-auto-login-bar"><i></i></div>
+          </div>
+        </div>
       </section>
     </div>
   </div>
@@ -25608,339 +25678,598 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
 
 
 
-<!-- === CH89 V170: DeepSeek auto report judge + instant XP grant, model hidden in UI === -->
-<style id="ch89-v170-ai-report-style">
+<!-- === CH89 STABLE REPORT REVIEW: AI verdict only, leadership grants XP manually === -->
+<style id="ch89-stable-report-review-style">
+  /* стабильная отчётность: старые конфликтующие кнопки и автозачёт отключены */
   #submitReportBtn,
   #submitReportBtnV16,
   #submitReportBtnV57,
-  #submitReportBtnV62 {
+  #submitReportBtnV62,
+  #submitReportBtnV154,
+  #reportFileInput,
+  #reportFileInputV62,
+  #reportFileBoxV62,
+  #t73V154GeminiBox,
+  #viewReportsBtn,
+  #viewReportsBtnV63 {
     display: none !important;
     visibility: hidden !important;
     pointer-events: none !important;
   }
-  #submitReportBtnV154 {
-    display: inline-flex !important;
-    width: 100% !important;
-    justify-content: center !important;
-    align-items: center !important;
-    gap: .55rem !important;
-    margin-top: 1rem !important;
-    padding: 1rem 1.15rem !important;
-    border-radius: 16px !important;
-    border: 1px solid rgba(127,232,160,.65) !important;
-    background: linear-gradient(135deg, #52c77b, #8fe0a8) !important;
-    color: #07100b !important;
-    font-weight: 950 !important;
-    box-shadow: 0 14px 34px rgba(82,199,123,.24) !important;
-    transform: translateZ(0) !important;
-  }
-  #submitReportBtnV154:hover { transform: translateY(-1px) translateZ(0) !important; filter: brightness(1.04); }
-  #submitReportBtnV154:disabled { opacity:.62 !important; cursor: wait !important; transform: none !important; }
-  .t73-v154-ai-card {
+
+  #ch89StableReportBox {
     display: grid;
-    gap: .9rem;
+    gap: .85rem;
+    margin-top: 1rem;
     padding: 1rem;
     border-radius: 18px;
-    border: 1px solid rgba(127,232,160,.32);
-    background: radial-gradient(circle at top left, rgba(82,199,123,.16), transparent 52%), rgba(4, 10, 8, .52);
-    box-shadow: inset 0 0 22px rgba(0,0,0,.22);
+    border: 1px solid rgba(127,232,160,.28);
+    background: linear-gradient(145deg, rgba(8,18,13,.72), rgba(7,9,18,.78));
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 16px 42px rgba(0,0,0,.22);
   }
-  .t73-v154-ai-title { display:flex; align-items:center; justify-content:space-between; gap:.75rem; flex-wrap:wrap; color:#fff; font-weight:950; }
-  .t73-v154-ai-help { color: var(--color-text-muted); font-size:.86rem; line-height:1.45; }
-  #reportGeminiFileInput { display:block !important; width:100% !important; }
-  #reportGeminiPreview { display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:.7rem; }
-  .t73-v154-file-card { position:relative; border-radius:14px; overflow:hidden; border:1px solid rgba(255,255,255,.14); background:rgba(0,0,0,.35); }
-  .t73-v154-file-card img { display:block; width:100%; height:98px; object-fit:cover; }
-  .t73-v154-file-card span { display:block; padding:.45rem; color:var(--color-text-muted); font-size:.76rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .t73-v154-remove { position:absolute; top:.35rem; right:.35rem; width:28px; height:28px; border-radius:999px; border:1px solid rgba(255,255,255,.35); background:rgba(239,68,68,.94); color:#fff; font-weight:950; cursor:pointer; }
-  .t73-v154-result-card { margin-top:.85rem; padding:1rem; border-radius:16px; border:1px solid rgba(191,198,255,.2); background:rgba(13,16,32,.62); color:var(--color-text-muted); display:grid; gap:.55rem; text-align:left; }
-  .t73-v154-result-card.good { border-color:rgba(82,199,123,.45); color:#dfffea; background:rgba(82,199,123,.1); }
-  .t73-v154-result-card.bad { border-color:rgba(255,107,136,.48); color:#ffd6df; background:rgba(255,107,136,.09); }
-  .t73-v154-result-row { display:flex; justify-content:space-between; gap:.75rem; align-items:flex-start; border-bottom:1px solid rgba(255,255,255,.08); padding-bottom:.45rem; }
-  .t73-v154-result-row:last-child { border-bottom:0; padding-bottom:0; }
-  .t73-v154-result-row b { color:#fff; }
-  .t73-v154-pill, #t73V154GeminiBox .t73-v154-pill { display:none !important; }
-  #reportAiLogBox { margin-top:.85rem; border-radius:16px; border:1px solid rgba(127,232,160,.26); background:rgba(0,0,0,.22); padding:.8rem; display:none; gap:.5rem; }
-  #reportAiLogBox.t73-v162-show { display:grid; }
-  .t73-v162-ai-log-head { display:flex; align-items:center; justify-content:space-between; gap:.7rem; color:#fff; font-weight:950; }
-  .t73-v162-ai-log-badge { border-radius:999px; border:1px solid rgba(191,198,255,.24); background:rgba(255,255,255,.07); color:var(--color-text-muted); padding:.25rem .55rem; font-size:.74rem; }
-  .t73-v162-ai-log-steps { display:grid; gap:.38rem; }
-  .t73-v162-ai-log-step { display:grid; grid-template-columns:1.35rem minmax(0,1fr); gap:.45rem; align-items:start; color:var(--color-text-muted); font-size:.84rem; line-height:1.35; }
-  .t73-v162-ai-log-step b { color:#fff; }
-  .t73-v162-ai-log-step.ok { color:#bfffd0; }
-  .t73-v162-ai-log-step.bad { color:#ffd6df; }
-  @media (max-width: 720px) {
-    .t73-v154-result-row { display:grid; }
+  .ch89-stable-report-title {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: .75rem;
+    flex-wrap: wrap;
+    color: #fff;
+    font-weight: 950;
+  }
+  .ch89-stable-report-help {
+    color: var(--color-text-muted);
+    font-size: .88rem;
+    line-height: 1.45;
+  }
+  #ch89StableReportPreview {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(128px, 1fr));
+    gap: .65rem;
+    min-height: 42px;
+  }
+  .ch89-stable-file-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,.14);
+    background: rgba(0,0,0,.32);
+  }
+  .ch89-stable-file-card img {
+    display: block;
+    width: 100%;
+    height: 96px;
+    object-fit: cover;
+  }
+  .ch89-stable-file-card span {
+    display: block;
+    padding: .45rem;
+    color: var(--color-text-muted);
+    font-size: .76rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .ch89-stable-file-remove {
+    position: absolute;
+    top: .35rem;
+    right: .35rem;
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,.35);
+    background: rgba(239,68,68,.94);
+    color: #fff;
+    font-weight: 950;
+    cursor: pointer;
+  }
+  #ch89StableSubmitReportBtn,
+  #ch89StableReviewReportsBtn {
+    display: inline-flex;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+    gap: .55rem;
+    min-height: 46px;
+    border-radius: 16px;
+    border: 1px solid rgba(127,232,160,.58);
+    background: linear-gradient(135deg, #52c77b, #8fe0a8);
+    color: #07100b;
+    font-weight: 950;
+    cursor: pointer;
+    box-shadow: 0 12px 30px rgba(82,199,123,.2);
+  }
+  #ch89StableReviewReportsBtn {
+    margin-top: .7rem;
+    border-color: rgba(255,191,71,.55);
+    background: linear-gradient(135deg, #ffbf47, #ffe08a);
+    color: #161006;
+  }
+  #ch89StableSubmitReportBtn:disabled,
+  #ch89StableReviewReportsBtn:disabled {
+    opacity: .62;
+    cursor: wait;
+  }
+  #ch89StableReportLog {
+    display: none;
+    gap: .45rem;
+    padding: .8rem;
+    border-radius: 15px;
+    border: 1px solid rgba(127,232,160,.2);
+    background: rgba(0,0,0,.24);
+    color: var(--color-text-muted);
+    font-size: .86rem;
+    line-height: 1.4;
+  }
+  #ch89StableReportLog.is-open { display: grid; }
+  .ch89-stable-log-line { display: grid; grid-template-columns: 1.4rem minmax(0,1fr); gap: .45rem; }
+  .ch89-stable-log-line.ok { color: #bfffd0; }
+  .ch89-stable-log-line.bad { color: #ffd6df; }
+  .ch89-stable-log-line.warn { color: #ffe2a3; }
+  .ch89-stable-result-card {
+    margin-top: .85rem;
+    padding: 1rem;
+    border-radius: 16px;
+    border: 1px solid rgba(255,191,71,.35);
+    background: rgba(255,191,71,.08);
+    color: #ffeec2;
+    display: grid;
+    gap: .55rem;
+    text-align: left;
+  }
+  .ch89-stable-result-row { display:flex; justify-content:space-between; gap:.8rem; border-bottom:1px solid rgba(255,255,255,.08); padding-bottom:.4rem; }
+  .ch89-stable-result-row:last-child { border-bottom:0; padding-bottom:0; }
+  .ch89-stable-result-row b { color:#fff; }
+
+  #reportsListArea.ch89-stable-review-open {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1rem;
+    width: 100%;
+    margin-top: 1rem;
+    align-items: start;
+  }
+  .ch89-stable-review-card {
+    border: 1px solid rgba(191,198,255,.18);
+    background: linear-gradient(145deg, rgba(255,255,255,.065), rgba(0,0,0,.28));
+    border-radius: 18px;
+    padding: 1rem;
+    display: grid;
+    gap: .78rem;
+    box-shadow: 0 12px 34px rgba(0,0,0,.22);
+    min-width: 0;
+  }
+  .ch89-stable-review-head { display:flex; justify-content:space-between; align-items:flex-start; gap:.75rem; flex-wrap:wrap; }
+  .ch89-stable-review-head strong { color:#fff; overflow-wrap:anywhere; }
+  .ch89-stable-muted { color: var(--color-text-muted); font-size: .84rem; line-height:1.4; overflow-wrap:anywhere; }
+  .ch89-stable-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    width: max-content;
+    max-width: 100%;
+    border-radius: 999px;
+    padding: .28rem .62rem;
+    border: 1px solid rgba(255,255,255,.16);
+    background: rgba(255,255,255,.06);
+    color: var(--color-text-muted);
+    font-size: .78rem;
+    font-weight: 900;
+  }
+  .ch89-stable-pill.pending { color:#facc15; border-color:rgba(250,204,21,.45); background:rgba(250,204,21,.12); }
+  .ch89-stable-pill.ok { color:#7fe8a0; border-color:rgba(127,232,160,.45); background:rgba(127,232,160,.1); }
+  .ch89-stable-pill.bad { color:#ff9aad; border-color:rgba(255,107,136,.45); background:rgba(255,107,136,.1); }
+  .ch89-stable-proof img { max-width: 100%; max-height: 180px; object-fit: contain; border-radius: 12px; border:1px solid rgba(255,255,255,.14); cursor: zoom-in; background: rgba(0,0,0,.22); }
+  .ch89-stable-ai-box { display:grid; gap:.45rem; padding:.75rem; border-radius:14px; border:1px solid rgba(255,191,71,.22); background:rgba(255,191,71,.07); }
+  .ch89-stable-actions { display:grid; grid-template-columns: repeat(auto-fit, minmax(126px, 1fr)); gap:.5rem; }
+  .ch89-stable-actions .btn { min-height: 40px; }
+  .ch89-stable-norm-select { width:100%; border-radius:12px; border:1px solid rgba(255,255,255,.18); background:#111827; color:#fff; padding:.65rem .75rem; font-weight:900; outline:none; }
+
+  /* общая стабилизация: без 3D-прыжков, без бесконечной тряски, только лёгкое затемнение/свечение */
+  html { scroll-behavior: smooth; }
+  .game-card,
+  .panel,
+  .mode-btn,
+  .btn,
+  .shop-item,
+  .mod-report-card,
+  .t73-v94-review-card,
+  .t73-v94-inactive-card,
+  .ch89-stable-review-card {
+    transform: none !important;
+    will-change: auto !important;
+    backface-visibility: hidden;
+  }
+  .game-card:hover,
+  .panel:hover,
+  .mode-btn:hover,
+  .shop-item:hover,
+  .mod-report-card:hover,
+  .t73-v94-review-card:hover,
+  .t73-v94-inactive-card:hover,
+  .ch89-stable-review-card:hover {
+    transform: none !important;
+  }
+  .btn,
+  .mode-btn,
+  .support-input,
+  .status-select,
+  .ch89-stable-norm-select {
+    transition: border-color .16s ease, background-color .16s ease, color .16s ease, box-shadow .16s ease, opacity .16s ease, filter .16s ease !important;
+  }
+  .btn:hover,
+  .mode-btn:hover,
+  #ch89StableSubmitReportBtn:hover,
+  #ch89StableReviewReportsBtn:hover {
+    filter: brightness(1.04);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  }
+  @media (max-width: 760px) {
+    #reportsListArea.ch89-stable-review-open { grid-template-columns: 1fr; }
+    .ch89-stable-result-row { display:grid; }
   }
 </style>
-<script id="ch89-v170-ai-report-script">
+<script id="ch89-stable-report-review-script">
 (function(){
   'use strict';
-  if (window.__CH89_V170_AI_REPORTS__) return;
-  window.__CH89_V170_AI_REPORTS__ = true;
+  if (window.__CH89_STABLE_REPORT_REVIEW__) return;
+  window.__CH89_STABLE_REPORT_REVIEW__ = true;
 
-  var STORAGE_KEY = 't73_deepseek_ai_config_v167';
+  var SETTINGS_EMAIL = 'SITE_SETTINGS';
+  var REPORTS_KEY = 'ch89_ai_reports_config_v171';
+  var LEGACY_KEY = 't73_deepseek_ai_config_v167';
   var DEFAULT_ENDPOINT = 'https://api.deepseek.com/chat/completions';
   var DEFAULT_MODEL = 'deepseek-v4-pro';
-  var REPORT_INSTRUCTION_ROW = 'ch89_report_check_instruction_v172';
-  var REPORT_INSTRUCTION_LOCAL = 'ch89_report_check_instruction_v172_local';
-  var files = [];
+  var reportFiles = [];
   var busy = false;
 
-  var SYSTEM_PROMPT = 'Ты — строгий и внимательный проверяющий отчётов модераторов. ' +
-'Проверь отчёт по скриншоту и заявленному времени. Отвечай только JSON без markdown. ' +
-'Начисление XP строго по фактическому времени на скриншоте: от 10 до 29 минут включительно — 15 XP и категория "Норма"; от 30 до 59 минут — 30 XP и категория "Перенорма"; от 60 минут и выше — 60 XP и категория "Герой дня"; меньше 10 минут, отсутствие подтверждённого времени, нечитаемый или фальшивый отчёт — 0 XP и категория "Не выполнено". ' +
-'Если заявленное время и скриншот немного отличаются, используй фактическое время со скриншота. ' +
-'Формат ответа строго такой: {"status":"Одобрено" или "Отклонено","verifiedTime":"найденное время","category":"Норма" или "Перенорма" или "Герой дня" или "Не выполнено","xp":15 или 30 или 60 или 0,"reason":"короткая причина"}';
-
-  function defaultReportInstruction(){
-    return 'Проверяй отчёты модераторов строго по доказательству на скриншоте. Сначала найди фактическое время работы на скриншоте, затем сравни его с заявленным временем. Если время не читается, скриншот не относится к отчёту, есть признаки подделки или доказательство не подтверждает работу — отклоняй и ставь 0 XP. Стандартные пороги: 10–29 минут — Норма, 15 XP; 30–59 минут — Перенорма, 30 XP; 60+ минут — Герой дня, 60 XP; меньше 10 минут — Не выполнено, 0 XP. В reason коротко объясни, что именно найдено и почему отчёт принят или отклонён.';
-  }
-  function isCustomReportInstruction(text){
-    var a=String(text||'').replace(/\s+/g,' ').trim();
-    var b=defaultReportInstruction().replace(/\s+/g,' ').trim();
-    return !!a && a !== b;
-  }
+  var SERVICE = new Set(['ACCESS_KEY','ADMIN_ROLE','SHOP_MOD','SHOP_AP','ROULETTE_MOD','ROULETTE_AP','CUSTOM_MOD_MSG','CUSTOM_AP_MSG','HIDDEN_CHECK','USER_ROLE','USER_KIND','INACTIVE_REQ','SHOP_OVERRIDE','GAME_XP','MANUAL_XP','AP_POINTS','FSB_POINTS','FSB_SPEND','SHOP_FSB','ROULETTE_FSB','CUSTOM_FSB_MSG','REPORT_TABLE_MARK','GOSS_PROFILE','GOSS_USER_REPORT','GOSS_REPORT_CHECK','GOSS_REPORT_TABLE','GOSS_REPORT_TABLE_V13','GOSS_REPORT_TABLE_V15','GOSS_REPORT_TABLE_V16','GOSS_REPORT_TABLE_V19','GOSS_REPORT_MEMBER_V19','GOSS_REPORT_PROOF_V19','GOSS_POINTS_V19','GOSS_ORG_LOG','GOSS_ORG_LOG_V19','GOSS_ORG_LOG_V24','GOSS_SHOP_ITEMS_V13','GOSS_SHOP_ITEMS_V19','GOSS_SHOP_ITEMS_V24','GOSS_SHOP_ITEMS_V26','GOSS_SHOP_PURCHASE','FSB_SHOP_LOG','AI_REPORTS_API','AI_ANSWERS_API', SETTINGS_EMAIL]);
+  var NORMS = [
+    { value:'Натяг', xp:7 },
+    { value:'Норма', xp:15 },
+    { value:'Перенорма', xp:30 },
+    { value:'Герой дня', xp:60 }
+  ];
 
   function $(id){ return document.getElementById(id); }
+  function qsa(sel, root){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
   function esc(value){ return String(value == null ? '' : value).replace(/[&<>"']/g, function(ch){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]; }); }
   function scrub(value){ return String(value == null ? '' : value).replace(/Gemini|gemini[-\w.]*|DeepSeek|deepseek[-\w.]*/gi, 'AI').replace(/модель\s*[:\-]?\s*[^\s,.]+/gi, 'сервис').trim(); }
+  function normXp(value){ var n = NORMS.find(function(x){ return x.value === value; }); return n ? n.xp : 0; }
+  function normClean(value){ value = String(value || '').trim(); return NORMS.some(function(x){ return x.value === value; }) ? value : 'Норма'; }
   function client(){
     try { if (typeof supa !== 'undefined' && supa && typeof supa.from === 'function') return supa; } catch(e) {}
-    if (window.supa && typeof window.supa.from === 'function') return window.supa;
-    if (window.__T73_SUPA && typeof window.__T73_SUPA.from === 'function') return window.__T73_SUPA;
-    if (window.t73Supa && typeof window.t73Supa.from === 'function') return window.t73Supa;
-    if (window.supabaseClient && typeof window.supabaseClient.from === 'function') return window.supabaseClient;
+    var keys = ['supa','__T73_SUPA','t73Supa','supabaseClient'];
+    for (var i=0;i<keys.length;i++){ var c = window[keys[i]]; if (c && typeof c.from === 'function') return c; }
+    try {
+      if (window.supabase && typeof window.supabase.createClient === 'function') {
+        window.__CH89_STABLE_SUPA = window.__CH89_STABLE_SUPA || window.supabase.createClient('https://zisjpdugogkntsmkvlha.supabase.co','sb_publishable_0q1B_GyskY1umJO7T-mTIQ_LkL9ncr_');
+        return window.__CH89_STABLE_SUPA;
+      }
+    } catch(e) {}
     return null;
   }
   async function authUser(){
-    var c = client();
     try { if (window.currentUser && window.currentUser.email) return window.currentUser; } catch(e) {}
+    try { if (typeof currentUser !== 'undefined' && currentUser && currentUser.email) return currentUser; } catch(e) {}
+    var c = client();
     if (!c || !c.auth) return null;
     try { var r = await c.auth.getUser(); if (r && r.data && r.data.user) { window.currentUser = r.data.user; return r.data.user; } } catch(e) {}
     try { var s = await c.auth.getSession(); var u = s && s.data && s.data.session && s.data.session.user; if (u) { window.currentUser = u; return u; } } catch(e) {}
     return null;
   }
-  function nicknameFromUser(user){
-    return String(($('reportNickInput') && $('reportNickInput').value) || window.currentNickname || (user && user.user_metadata && (user.user_metadata.nickname || user.user_metadata.name)) || (user && user.email) || '').trim();
+  function creatorEmailValue(){ try { return String(typeof creatorEmail !== 'undefined' ? creatorEmail : 'daniiltimosin72@gmail.com').toLowerCase(); } catch(e){ return 'daniiltimosin72@gmail.com'; } }
+  function arr(name){ try { return Array.isArray(window[name]) ? window[name] : eval('typeof '+name+' !== "undefined" && Array.isArray('+name+') ? '+name+' : []'); } catch(e){ return []; } }
+  function isLeaderFast(){
+    var u = null;
+    try { u = window.currentUser || (typeof currentUser !== 'undefined' ? currentUser : null); } catch(e) {}
+    if (!u) return false;
+    var email = String(u.email || '').toLowerCase();
+    var id = String(u.id || u.user_id || '');
+    return email === creatorEmailValue() || arr('adminEmails').indexOf(u.email) !== -1 || arr('dynamicModLeaders').indexOf(id) !== -1 || document.body.classList.contains('t73-v94-mod-leader') || document.body.classList.contains('t73-v132-mod-leader');
   }
-  function setStatus(text, ok, html){
-    var res = $('reportResultText'); if (!res) return;
+  async function isLeader(){
+    var u = await authUser();
+    if (!u) return false;
+    if (isLeaderFast()) return true;
+    var c = client();
+    if (!c) return false;
+    try {
+      var keys = [u.id, u.user_id, u.email].filter(Boolean).map(String);
+      var r = await c.from('reports').select('email,status,link').in('email',['ADMIN_ROLE']).in('link', keys).limit(60);
+      var rows = r && r.data || [];
+      return rows.some(function(row){ var st=String(row.status||'').toLowerCase(); return st.indexOf('lead') !== -1 || st.indexOf('руковод') !== -1 || st.indexOf('mod_admin') !== -1 || st.indexOf('moderation') !== -1; });
+    } catch(e){ return false; }
+  }
+  function setResult(text, ok, html){
+    var res = $('reportResultText');
+    if (!res) return;
     res.style.color = ok ? 'var(--color-success)' : 'var(--color-error)';
     res.innerHTML = html || esc(scrub(text || ''));
   }
-  function ensureAiLogBox(){
-    var btn = $('submitReportBtnV154');
-    if (!$('reportAiLogBox') && btn) btn.insertAdjacentHTML('afterend', '<div id="reportAiLogBox"><div class="t73-v162-ai-log-head"><span>Лог проверки</span><span id="reportAiLogBadge" class="t73-v162-ai-log-badge">готово</span></div><div id="reportAiLogSteps" class="t73-v162-ai-log-steps"></div></div>');
-  }
-  function setAiBadge(text){ var b=$('reportAiLogBadge'); if(b) b.textContent=scrub(text || 'готово'); }
-  function resetAiLog(){ ensureAiLogBox(); var box=$('reportAiLogBox'), steps=$('reportAiLogSteps'); if(box) box.classList.add('t73-v162-show'); if(steps) steps.innerHTML=''; setAiBadge('идёт проверка'); }
-  function addAiStep(icon, text, type){
-    ensureAiLogBox(); var steps=$('reportAiLogSteps'); if(!steps) return;
-    var line=document.createElement('div'); line.className='t73-v162-ai-log-step' + (type ? ' ' + type : '');
-    line.innerHTML='<span>'+esc(icon || '•')+'</span><span>'+esc(scrub(text || ''))+'</span>'; steps.appendChild(line);
-  }
-  function durationToMinutes(value){
-    var s = String(value == null ? '' : value).toLowerCase().replace(/,/g, '.').replace(/\s+/g, ' ').trim();
-    if (!s || /не\s*найден|неизвест|нет\s+врем|отсутств/i.test(s)) return null;
-    var clock = s.match(/(?:^|[^\d])(\d{1,2})\s*:\s*(\d{2})(?:\s*:\s*(\d{2}))?(?:[^\d]|$)/);
-    if (clock) { var h=Number(clock[1]), m=Number(clock[2]), sec=Number(clock[3]||0); if (isFinite(h)&&isFinite(m)&&h>=0&&h<=24&&m>=0&&m<60) return Math.round(h*60+m+(sec>=30?1:0)); }
-    var total=0, found=false;
-    function add(re, mult){ var match=s.match(re); if(!match) return; var num=parseFloat(String(match[1]).replace(',', '.')); if(!isFinite(num)) return; total += num*mult; found=true; }
-    add(/(\d+(?:\.\d+)?)\s*(?:дн\.?|день|дня|дней|day|days)\b/i,1440);
-    add(/(\d+(?:\.\d+)?)\s*(?:ч\.?|час|часа|часов|h|hr|hrs|hour|hours)\b/i,60);
-    add(/(\d+(?:\.\d+)?)\s*(?:м\.?|мин\.?|минута|минуты|минут|min|mins|minute|minutes)\b/i,1);
-    if(!found) return null; return Math.round(total);
-  }
-  function normByMinutes(minutes){
-    if (minutes == null || !isFinite(minutes)) return null;
-    if (minutes >= 60) return {status:'Одобрено', category:'Герой дня', xp:60, threshold:'60 минут'};
-    if (minutes >= 30) return {status:'Одобрено', category:'Перенорма', xp:30, threshold:'30 минут'};
-    if (minutes >= 10) return {status:'Одобрено', category:'Норма', xp:15, threshold:'10 минут'};
-    return {status:'Отклонено', category:'Не выполнено', xp:0, threshold:'10 минут'};
-  }
-  function sanitizeResult(raw, instructionText){
-    var customRules = isCustomReportInstruction(instructionText);
-    var result=raw||{};
-    var status=String(result.status||'').trim();
-    var category=String(result.category||'').trim();
-    var verifiedTime=String(result.verifiedTime||'').trim();
-    var reason=scrub(String(result.reason||'').trim());
-    var xp=Number(result.xp||0);
-    var minutes=durationToMinutes(verifiedTime), norm=normByMinutes(minutes);
-    if(norm && !customRules){
-      status=norm.status; category=norm.category; xp=norm.xp;
-      if (xp>0 && (!reason || /2\s*час|двух\s*час|минимальн/i.test(reason))) reason='Фактическое время на скриншоте (' + verifiedTime + ', примерно ' + minutes + ' мин.) достигает порога «' + category + '». Начислено ' + xp + ' XP.';
-      if (xp===0) reason='Фактическое время на скриншоте (' + (verifiedTime || 'не найдено') + (minutes != null ? ', примерно ' + minutes + ' мин.' : '') + ') меньше минимальной нормы 10 минут. Начислено 0 XP.';
-    } else {
-      if (!['Одобрено','Отклонено'].includes(status)) status = xp > 0 ? 'Одобрено' : 'Отклонено';
-      if (!category) category = customRules ? (xp > 0 ? 'Засчитано' : 'Не выполнено') : (xp >= 60 ? 'Герой дня' : xp >= 30 ? 'Перенорма' : xp >= 15 ? 'Норма' : 'Не выполнено');
-      if (status === 'Отклонено') xp = 0;
-      if (!customRules) {
-        if (category === 'Норма') xp = 15;
-        if (category === 'Перенорма') xp = 30;
-        if (category === 'Герой дня') xp = 60;
-        if (category === 'Не выполнено') xp = 0;
-        if (![0,15,30,60].includes(xp)) xp = 0;
-      } else {
-        xp = Math.max(0, Math.round(Number(xp) || 0));
-      }
-    }
-    return { status:status, verifiedTime:verifiedTime || 'не найдено', category:category, xp:xp, reason:reason || 'Проверка завершена без подробного объяснения.' };
-  }
-  function parseModelJson(text){
-    var s=String(text||'').trim(); if(!s) throw new Error('Сервис проверки вернул пустой ответ.');
-    s=s.replace(/^```(?:json)?/i,'').replace(/```$/i,'').trim();
-    try { return JSON.parse(s); } catch(e){ var m=s.match(/\{[\s\S]*\}/); if(m) return JSON.parse(m[0]); throw e; }
-  }
-  function readAsDataURL(file){ return new Promise(function(resolve,reject){ var reader=new FileReader(); reader.onload=function(){ resolve(String(reader.result||'')); }; reader.onerror=function(){ reject(reader.error || new Error('Не удалось прочитать файл.')); }; reader.readAsDataURL(file); }); }
-  function loadImage(dataUrl){ return new Promise(function(resolve,reject){ var img=new Image(); img.onload=function(){ resolve(img); }; img.onerror=function(){ reject(new Error('Не удалось открыть изображение.')); }; img.src=dataUrl; }); }
-  async function compressImage(file){
-    var raw=await readAsDataURL(file), img=await loadImage(raw);
-    var width=img.naturalWidth||img.width, height=img.naturalHeight||img.height, maxSide=/iPhone|Android|Mobile/i.test(navigator.userAgent)?1100:1400;
-    var canvas=document.createElement('canvas');
-    function draw(side, quality){ var ratio=Math.min(1, side/Math.max(width,height)); canvas.width=Math.max(1,Math.round(width*ratio)); canvas.height=Math.max(1,Math.round(height*ratio)); var ctx=canvas.getContext('2d',{alpha:false}); ctx.fillStyle='#111'; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.drawImage(img,0,0,canvas.width,canvas.height); return canvas.toDataURL('image/jpeg', quality); }
-    var out=draw(maxSide,.72); while(out.length>900000 && maxSide>760){ maxSide-=160; out=draw(maxSide,.58); } while(out.length>900000 && maxSide>560){ maxSide-=120; out=draw(maxSide,.46); } return out;
-  }
-  function renderPreview(){
-    var box=$('reportGeminiPreview'); if(!box) return;
-    if(!files.length){ box.innerHTML='<div class="t73-v154-ai-help" style="grid-column:1/-1;">Скриншот для проверки ещё не выбран.</div>'; return; }
-    box.innerHTML=files.map(function(file,i){ var url=URL.createObjectURL(file); return '<div class="t73-v154-file-card"><button class="t73-v154-remove" type="button" data-v154-remove="'+i+'">×</button><img src="'+url+'" alt="Скриншот" onload="try{URL.revokeObjectURL(this.src)}catch(e){}"><span>'+esc(file.name||('screen_'+(i+1)))+'</span></div>'; }).join('');
-    box.querySelectorAll('[data-v154-remove]').forEach(function(btn){ btn.onclick=function(){ files.splice(Number(btn.dataset.v154Remove),1); renderPreview(); }; });
-  }
-  function ensureUi(){
-    var form=$('reportFormArea') || $('mode-report'); if(!form) return;
-    ['submitReportBtn','submitReportBtnV16','submitReportBtnV57','submitReportBtnV62','reportFileInput','reportFileInputV62'].forEach(function(id){ var el=$(id); if(!el) return; el.style.setProperty('display','none','important'); el.style.setProperty('visibility','hidden','important'); el.setAttribute('aria-hidden','true'); });
-    if(!$('reportClaimedTimeInput')){
-      var work=$('reportWorkInput'), date=$('reportDateInput'), anchor=date||work||$('reportLinkInput')||form;
-      var html='<div class="admin-field" id="reportClaimedTimeField"><label>Заявленное время работы:</label><input id="reportClaimedTimeInput" class="support-input" type="text" placeholder="Например: 10 минут / 30 минут / 1 час 1 минута"></div>';
-      if(anchor && anchor.closest && anchor.closest('.admin-field')) anchor.closest('.admin-field').insertAdjacentHTML('beforebegin', html); else anchor.insertAdjacentHTML('beforebegin', html);
-    }
-    if(!$('t73V154GeminiBox')){
-      var place=($('reportFileBoxV62') || ($('reportLinkInput') && $('reportLinkInput').closest && $('reportLinkInput').closest('.admin-field')) || ($('reportFileInput') && $('reportFileInput').closest && $('reportFileInput').closest('.admin-field')) || form);
-      var boxHtml='<div id="t73V154GeminiBox" class="t73-v154-ai-card">' +
-        '<div class="t73-v154-ai-title"><span>Автопроверка отчёта</span></div>' +
-        '<div class="t73-v154-ai-help">Загрузите скриншот с таймером/Discord/учётом времени. Система сверит его с заявленным временем, определит статус и запишет XP в таблицу.</div>' +
-        '<div class="admin-field"><label>Скриншот для проверки:</label><input id="reportGeminiFileInput" class="support-input" type="file" accept="image/*,.png,.jpg,.jpeg,.webp"><div id="reportGeminiPreview"></div></div>' +
-        '</div>';
-      place.insertAdjacentHTML('afterend', boxHtml);
-    } else {
-      var title=$('t73V154GeminiBox').querySelector('.t73-v154-ai-title span'); if(title) title.textContent='Автопроверка отчёта';
-      var help=$('t73V154GeminiBox').querySelector('.t73-v154-ai-help'); if(help) help.textContent='Загрузите скриншот с таймером/Discord/учётом времени. Система сверит его с заявленным временем, определит статус и запишет XP в таблицу.';
-      var pill=$('t73V154GeminiBox').querySelector('.t73-v154-pill'); if(pill) pill.remove();
-    }
-    var oldBtn=$('submitReportBtnV62')||$('submitReportBtnV57')||$('submitReportBtnV16')||$('submitReportBtn')||$('t73V154GeminiBox')||form;
-    if(!$('submitReportBtnV154')) oldBtn.insertAdjacentHTML('afterend','<button class="support-check-btn" type="button" id="submitReportBtnV154">Проверить отчёт и зачесть XP</button>');
-    var input=$('reportGeminiFileInput');
-    if(input && input.dataset.ch89v170Bound!=='1'){
-      input.dataset.ch89v170Bound='1';
-      input.onchange=function(){ var picked=Array.from(input.files||[]).filter(function(f){ return /^image\//i.test(String(f.type||'')); }); files=picked.slice(0,1); input.value=''; renderPreview(); };
-    }
-    var btn=$('submitReportBtnV154');
-    if(btn){ btn.textContent='Проверить отчёт и зачесть XP'; btn.dataset.v154Bound='1'; }
-    ensureAiLogBox(); renderPreview();
-  }
-  function normalizeConfig(cfg){
-    cfg=cfg||{}; return { apiKey:String(cfg.apiKey||cfg.key||'').trim(), endpoint:String(cfg.endpoint||DEFAULT_ENDPOINT).trim()||DEFAULT_ENDPOINT, model:String(cfg.model||DEFAULT_MODEL).trim()||DEFAULT_MODEL, thinking: cfg.thinking === false ? false : true };
-  }
+  function logReset(){ var box=$('ch89StableReportLog'); if(box){ box.classList.add('is-open'); box.innerHTML=''; } }
+  function logLine(icon, text, type){ var box=$('ch89StableReportLog'); if(!box) return; var div=document.createElement('div'); div.className='ch89-stable-log-line '+(type||''); div.innerHTML='<span>'+esc(icon||'•')+'</span><span>'+esc(scrub(text||''))+'</span>'; box.appendChild(div); }
+  function readLocalConfig(key){ try { return JSON.parse(localStorage.getItem(key) || '{}') || {}; } catch(e){ return {}; } }
+  function normalizeConfig(cfg){ cfg = cfg || {}; return { apiKey:String(cfg.apiKey || cfg.key || '').trim(), endpoint:String(cfg.endpoint || DEFAULT_ENDPOINT).trim() || DEFAULT_ENDPOINT, model:String(cfg.model || DEFAULT_MODEL).trim() || DEFAULT_MODEL, thinking: cfg.thinking === false ? false : true }; }
   async function getConfig(){
-    try { if(window.CH89_V171_AI_CONFIG && typeof window.CH89_V171_AI_CONFIG.getReports==='function'){ var sep=await window.CH89_V171_AI_CONFIG.getReports(); if(sep && sep.apiKey) return normalizeConfig(sep); } } catch(e){}
-    try { if(window.T73_V167_DEEPSEEK_CONFIG && typeof window.T73_V167_DEEPSEEK_CONFIG.get==='function'){ var shared=await window.T73_V167_DEEPSEEK_CONFIG.get(); if(shared && shared.apiKey) return normalizeConfig(shared); } } catch(e){}
-    try { return normalizeConfig(JSON.parse(localStorage.getItem('ch89_ai_reports_config_v171')||localStorage.getItem(STORAGE_KEY)||'{}')); } catch(e){ return normalizeConfig({}); }
+    try { if (window.CH89_V171_AI_CONFIG && typeof window.CH89_V171_AI_CONFIG.getReports === 'function') { var cfg = await window.CH89_V171_AI_CONFIG.getReports(); if (cfg && cfg.apiKey) return normalizeConfig(cfg); } } catch(e) {}
+    return normalizeConfig(readLocalConfig(REPORTS_KEY).apiKey ? readLocalConfig(REPORTS_KEY) : readLocalConfig(LEGACY_KEY));
   }
   async function loadReportInstruction(){
-    try { if(window.CH89_V172_REPORT_INSTRUCTION && typeof window.CH89_V172_REPORT_INSTRUCTION.load==='function') { var fromPanel=await window.CH89_V172_REPORT_INSTRUCTION.load(); if(String(fromPanel||'').trim()) return String(fromPanel).trim(); } } catch(e){}
-    var local='';
-    try { local=String(localStorage.getItem(REPORT_INSTRUCTION_LOCAL)||'').trim(); } catch(e){}
-    var c=client();
-    if(c){
-      try { var r=await c.from('reports').select('date').eq('id', REPORT_INSTRUCTION_ROW).limit(1); var row=r && r.data && r.data[0]; if(row && row.date) return String(row.date||'').trim(); } catch(e){}
+    try { if (window.CH89_V172_REPORT_INSTRUCTION && typeof window.CH89_V172_REPORT_INSTRUCTION.load === 'function') { var text = await window.CH89_V172_REPORT_INSTRUCTION.load(); if (String(text || '').trim()) return String(text).trim(); } } catch(e) {}
+    return 'Проверь отчёт по скриншоту. Определи фактическое время, категорию нормы и рекомендуемое количество XP, но не выдавай XP самостоятельно. Ответь только JSON.';
+  }
+  function fileToDataURL(file){ return new Promise(function(resolve, reject){ var reader = new FileReader(); reader.onload=function(){ resolve(String(reader.result || '')); }; reader.onerror=function(){ reject(reader.error || new Error('Не удалось прочитать файл.')); }; reader.readAsDataURL(file); }); }
+  function loadImage(dataUrl){ return new Promise(function(resolve, reject){ var img = new Image(); img.onload=function(){ resolve(img); }; img.onerror=function(){ reject(new Error('Не удалось открыть изображение.')); }; img.src=dataUrl; }); }
+  async function compressImage(file){
+    var raw = await fileToDataURL(file);
+    var img = await loadImage(raw);
+    var width = img.naturalWidth || img.width, height = img.naturalHeight || img.height, maxSide = /iPhone|Android|Mobile/i.test(navigator.userAgent) ? 1100 : 1400;
+    var canvas = document.createElement('canvas');
+    function draw(side, quality){ var ratio = Math.min(1, side / Math.max(width, height)); canvas.width = Math.max(1, Math.round(width * ratio)); canvas.height = Math.max(1, Math.round(height * ratio)); var ctx = canvas.getContext('2d', { alpha:false }); ctx.fillStyle='#111'; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.drawImage(img,0,0,canvas.width,canvas.height); return canvas.toDataURL('image/jpeg', quality); }
+    var out = draw(maxSide, .72);
+    while(out.length > 900000 && maxSide > 760){ maxSide -= 160; out = draw(maxSide, .58); }
+    while(out.length > 900000 && maxSide > 560){ maxSide -= 120; out = draw(maxSide, .46); }
+    return out;
+  }
+  function parseJson(text){
+    var s = String(text || '').trim();
+    if (!s) throw new Error('AI вернул пустой ответ.');
+    s = s.replace(/^```(?:json)?/i,'').replace(/```$/i,'').trim();
+    try { return JSON.parse(s); } catch(e){ var m = s.match(/\{[\s\S]*\}/); if (m) return JSON.parse(m[0]); throw e; }
+  }
+  function minutesFrom(value){
+    var s = String(value || '').toLowerCase().replace(/,/g,'.');
+    var clock = s.match(/(?:^|[^\d])(\d{1,2})\s*:\s*(\d{2})(?:\s*:\s*(\d{2}))?/);
+    if (clock) return Number(clock[1])*60 + Number(clock[2]) + (Number(clock[3]||0) >= 30 ? 1 : 0);
+    var total=0, found=false;
+    function add(re,m){ var x=s.match(re); if(x){ total += parseFloat(x[1])*m; found=true; } }
+    add(/(\d+(?:\.\d+)?)\s*(?:ч|час|h|hour)/,60); add(/(\d+(?:\.\d+)?)\s*(?:м|мин|min|minute)/,1);
+    return found ? Math.round(total) : null;
+  }
+  function normByMinutes(minutes){ if(minutes == null || !isFinite(minutes)) return null; if(minutes >= 60) return { category:'Герой дня', xp:60, status:'Одобрено' }; if(minutes >= 30) return { category:'Перенорма', xp:30, status:'Одобрено' }; if(minutes >= 10) return { category:'Норма', xp:15, status:'Одобрено' }; return { category:'Не выполнено', xp:0, status:'Отклонено' }; }
+  function sanitizeAi(raw){
+    var out = raw || {};
+    var verifiedTime = String(out.verifiedTime || out.time || out.foundTime || 'не найдено').trim();
+    var minutes = minutesFrom(verifiedTime);
+    var norm = normByMinutes(minutes);
+    var category = String(out.category || '').trim();
+    var xp = Number(out.xp || 0);
+    var status = String(out.status || '').trim();
+    if (norm) { category = norm.category; xp = norm.xp; status = norm.status; }
+    else {
+      if (!category) category = xp >= 60 ? 'Герой дня' : xp >= 30 ? 'Перенорма' : xp >= 15 ? 'Норма' : 'Не выполнено';
+      if (!['Норма','Перенорма','Герой дня','Натяг','Не выполнено'].includes(category)) category = xp > 0 ? 'Норма' : 'Не выполнено';
+      xp = category === 'Герой дня' ? 60 : category === 'Перенорма' ? 30 : category === 'Норма' ? 15 : category === 'Натяг' ? 7 : 0;
+      status = xp > 0 ? 'Одобрено' : 'Отклонено';
     }
-    return local || defaultReportInstruction();
+    return { status:status, verifiedTime:verifiedTime || 'не найдено', category:category, xp:xp, reason:scrub(out.reason || out.comment || 'AI проверил отчёт и передал рекомендацию руководству.') };
   }
   async function callAiJudge(dataUrl, declaredTime, meta){
-    var cfg=await getConfig();
-    if(!cfg.apiKey) throw new Error('API ключ проверки не настроен. Сохраните ключ в панели управления.');
-    var reportInstruction=await loadReportInstruction();
-    var systemPrompt=SYSTEM_PROMPT + '\n\nАКТУАЛЬНАЯ ИНСТРУКЦИЯ ДЛЯ ПРОВЕРКИ ОТЧЁТОВ:\n' + (reportInstruction || defaultReportInstruction()) + '\n\nЭта инструкция является главным источником правил для проверки отчёта. Если в ней указаны другие нормы, категории, условия принятия или XP — применяй именно её. Всё равно отвечай только JSON без markdown и не называй сервис или модель.';
-    var userText='Проверь отчёт модератора по актуальной инструкции. Заявленное время: '+declaredTime+'\nНик: '+(meta.nick||'')+'\nДата отчёта: '+(meta.date||'')+'\nКомментарий/работа: '+(meta.work||'')+'\nВерни только JSON по указанной схеме.';
-    var messages=[
-      { role:'system', content:systemPrompt },
-      { role:'user', content:[ { type:'text', text:userText }, { type:'image_url', image_url:{ url:dataUrl } } ] }
-    ];
-    var payload={ model:cfg.model, messages:messages, temperature:0.05, max_tokens:700, stream:false, response_format:{ type:'json_object' } };
-    if (/^deepseek-v4-/i.test(payload.model)) { payload.thinking = { type: cfg.thinking ? 'enabled' : 'disabled' }; if(cfg.thinking) payload.thinking.reasoning_effort='high'; }
-    var response=await fetch(cfg.endpoint,{ method:'POST', headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+cfg.apiKey }, body:JSON.stringify(payload) });
-    var data=await response.json().catch(function(){ return null; });
-    if(!response.ok){ var msg=data && data.error && (data.error.message || data.error) ? (data.error.message || data.error) : ('HTTP '+response.status); throw new Error('Сервис проверки: '+scrub(msg)); }
-    var choice=data && data.choices && data.choices[0];
-    var text=choice && choice.message && (choice.message.content || choice.message.reasoning_content);
-    return sanitizeResult(parseModelJson(text), reportInstruction);
+    var cfg = await getConfig();
+    if (!cfg.apiKey) throw new Error('API ключ проверки отчётов не настроен в панели управления.');
+    var instruction = await loadReportInstruction();
+    var system = 'Ты проверяешь отчёты модераторов. Нельзя выдавать XP и нельзя финально принимать отчёт: ты только даёшь рекомендацию для руководства. Отвечай строго JSON без markdown: {"status":"Одобрено или Отклонено","verifiedTime":"найденное время","category":"Норма или Перенорма или Герой дня или Натяг или Не выполнено","xp":15,"reason":"короткая причина"}. Инструкция проверки: ' + instruction;
+    var userText = 'Проверь отчёт по скриншоту. Заявленное время: ' + declaredTime + '\nНик: ' + (meta.nick || '') + '\nДата: ' + (meta.date || '') + '\nКомментарий: ' + (meta.work || '') + '\nВерни только JSON.';
+    var payload = { model:cfg.model, messages:[ {role:'system', content:system}, {role:'user', content:[{type:'text', text:userText},{type:'image_url', image_url:{url:dataUrl}}]} ], temperature:.05, max_tokens:700, stream:false, response_format:{ type:'json_object' } };
+    if (/^deepseek-v4-/i.test(payload.model)) { payload.thinking = { type: cfg.thinking ? 'enabled' : 'disabled' }; if (cfg.thinking) payload.thinking.reasoning_effort = 'high'; }
+    var response = await fetch(cfg.endpoint, { method:'POST', headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer ' + cfg.apiKey }, body:JSON.stringify(payload) });
+    var data = await response.json().catch(function(){ return null; });
+    if (!response.ok) { var msg = data && data.error && (data.error.message || data.error) ? (data.error.message || data.error) : ('HTTP ' + response.status); throw new Error('Ошибка AI проверки: ' + scrub(msg)); }
+    var choice = data && data.choices && data.choices[0];
+    var text = choice && choice.message && (choice.message.content || choice.message.reasoning_content);
+    return sanitizeAi(parseJson(text));
   }
   function resultHtml(verdict){
-    var cls=verdict.xp>0?'good':'bad';
-    return '<div class="t73-v154-result-card '+cls+'">' +
-      '<div class="t73-v154-result-row"><span>Статус</span><b>'+esc(verdict.status)+'</b></div>' +
-      '<div class="t73-v154-result-row"><span>Время на скриншоте</span><b>'+esc(verdict.verifiedTime)+'</b></div>' +
-      '<div class="t73-v154-result-row"><span>Категория</span><b>'+esc(verdict.category)+'</b></div>' +
-      '<div class="t73-v154-result-row"><span>XP</span><b>'+esc(verdict.xp)+'</b></div>' +
-      '<div><b>Причина:</b><br>'+esc(verdict.reason)+'</div>' +
+    return '<div class="ch89-stable-result-card">' +
+      '<div class="ch89-stable-result-row"><span>Статус AI</span><b>' + esc(verdict.status) + '</b></div>' +
+      '<div class="ch89-stable-result-row"><span>Время на скриншоте</span><b>' + esc(verdict.verifiedTime) + '</b></div>' +
+      '<div class="ch89-stable-result-row"><span>Рекомендация</span><b>' + esc(verdict.category) + ' · ' + esc(verdict.xp) + ' XP</b></div>' +
+      '<div><b>Причина:</b><br>' + esc(verdict.reason) + '</div>' +
+      '<div style="color:#ffe2a3;font-weight:900;">Итоговый статус: «У Руководства». XP не начислен и норма в таблицу не выставлена.</div>' +
     '</div>';
   }
-  async function refreshAfterInsert(){
-    try { if (window.T73_V63_REPORT_SYNC && typeof window.T73_V63_REPORT_SYNC.refresh === 'function') setTimeout(function(){ window.T73_V63_REPORT_SYNC.refresh(); }, 80); } catch(e) {}
-    try { if (typeof window.loadReportsTable === 'function') setTimeout(function(){ window.loadReportsTable(); }, 160); } catch(e) {}
-    try { if (window.T73_V44_MOD_TABLE && typeof window.T73_V44_MOD_TABLE.load === 'function') setTimeout(function(){ window.T73_V44_MOD_TABLE.load(); }, 260); } catch(e) {}
-    try { if (window.T73_V65_REAL_REPORT_XP && typeof window.T73_V65_REAL_REPORT_XP.refresh === 'function') setTimeout(function(){ window.T73_V65_REAL_REPORT_XP.refresh(); }, 360); } catch(e) {}
-    try { if (typeof loadCreatorPanelData === 'function') setTimeout(loadCreatorPanelData, 480); } catch(e) {}
+  function renderPreview(){
+    var box = $('ch89StableReportPreview');
+    if (!box) return;
+    if (!reportFiles.length) { box.innerHTML = '<div class="ch89-stable-report-help">Скриншот для AI проверки ещё не выбран.</div>'; return; }
+    box.innerHTML = reportFiles.map(function(file, i){ var url = URL.createObjectURL(file); return '<div class="ch89-stable-file-card"><button class="ch89-stable-file-remove" type="button" data-ch89-remove-file="'+i+'">×</button><img src="'+url+'" alt="Скриншот" onload="try{URL.revokeObjectURL(this.src)}catch(e){}"><span>'+esc(file.name || ('screen_'+(i+1)))+'</span></div>'; }).join('');
   }
-  async function submitWithAi(event){
-    if(event){ event.preventDefault(); event.stopPropagation(); event.stopImmediatePropagation(); }
-    ensureUi(); if(busy) return false;
-    var c=client(), user=await authUser(), btn=$('submitReportBtnV154');
-    var nick=nicknameFromUser(user), work=String(($('reportWorkInput')&&$('reportWorkInput').value)||'').trim(), date=String(($('reportDateInput')&&$('reportDateInput').value)||new Date().toISOString().slice(0,10)).trim(), claimed=String(($('reportClaimedTimeInput')&&$('reportClaimedTimeInput').value)||'').trim(), link=String(($('reportLinkInput')&&$('reportLinkInput').value)||'').trim();
-    if(!user || !user.email){ setStatus('Сначала войдите в аккаунт.', false); return false; }
-    if(!c){ setStatus('Supabase не загрузился. Обновите страницу и попробуйте ещё раз.', false); return false; }
-    if(!nick || !date || !claimed){ setStatus('Заполните ник, дату и заявленное время работы.', false); return false; }
-    if(!files.length){ setStatus('Для автоматической проверки нужен прямой скриншот. Ссылка не подходит для проверки в браузере.', false); return false; }
-    busy=true; resetAiLog(); addAiStep('📎','Скриншот выбран: '+(files[0].name||'image')+'.','ok'); addAiStep('🧾','Проверяю поля отчёта: ник, дата, заявленное время.','ok');
-    var oldText=btn?btn.textContent:''; if(btn){ btn.disabled=true; btn.textContent='Проверяю скриншот...'; }
-    setStatus('Сжимаю скриншот и отправляю на проверку...', true);
+  async function submitReport(){
+    if (busy) return false;
+    var c = client(), u = await authUser(), btn = $('ch89StableSubmitReportBtn');
+    var nick = String(($('reportNickInput') && $('reportNickInput').value) || (window.currentNickname || '') || (u && u.email) || '').trim();
+    var work = String(($('reportWorkInput') && $('reportWorkInput').value) || '').trim();
+    var date = String(($('reportDateInput') && $('reportDateInput').value) || new Date().toISOString().slice(0,10)).trim();
+    var claimed = String(($('reportClaimedTimeInput') && $('reportClaimedTimeInput').value) || '').trim();
+    var link = String(($('reportLinkInput') && $('reportLinkInput').value) || '').trim();
+    var quality = String(($('reportQualityInput') && $('reportQualityInput').value) || '').trim();
+    if (!u || !u.email) { setResult('Сначала войдите в аккаунт.', false); return false; }
+    if (!c) { setResult('База ещё не загрузилась. Обновите страницу и попробуйте ещё раз.', false); return false; }
+    if (!nick || !date || !claimed) { setResult('Заполните ник, дату и заявленное время работы.', false); return false; }
+    if (!reportFiles.length) { setResult('Загрузите скриншот для AI проверки. Ссылка может быть дополнением, но не заменяет скриншот.', false); return false; }
+    busy = true; var oldText = btn && btn.textContent; if (btn) { btn.disabled = true; btn.textContent = 'Проверяю и передаю руководству...'; }
+    logReset(); logLine('📎','Скриншот принят. Подготавливаю изображение.','ok'); setResult('AI проверяет отчёт. XP не будет начислен автоматически...', true);
     try {
-      addAiStep('🗜️','Сжимаю изображение, чтобы проверка не зависала и не грузила страницу.','warn');
-      var screenshot=await compressImage(files[0]);
-      addAiStep('🔎','Отправляю скриншот на проверку. Технические данные не выводятся в лог.','warn');
-      setStatus('Система анализирует время на скриншоте...', true);
-      var verdict=await callAiJudge(screenshot, claimed, {nick:nick,date:date,work:work});
-      addAiStep('⏱️','Найдено время: '+verdict.verifiedTime+'. Категория: '+verdict.category+', XP: '+verdict.xp+'.', verdict.xp>0?'ok':'bad');
-      var finalStatus=verdict.xp>0?verdict.category:'Не засчитано';
-      var payload={ version:'ch89_v170_ai_auto_report', nick:nick, nickname:nick, work:work, comment:work, date:date, day:date, declaredTime:claimed, requestedTime:claimed, ai:verdict, aiStatus:verdict.status, verifiedTime:verdict.verifiedTime, category:verdict.category, reason:verdict.reason, xp:verdict.xp, proofName:files[0].name||'report_screenshot.jpg', proofStoredIn:'row.link', linkText:link, userId:user.id, email:user.email, createdAt:new Date().toISOString() };
-      addAiStep('💾','Записываю отчёт в базу: статус «'+finalStatus+'», XP: '+Number(verdict.xp||0)+'.','warn');
-      var ins=await c.from('reports').insert([{ id:'rep_ai_v170_'+Date.now()+'_'+Math.random().toString(16).slice(2), email:user.email, link:screenshot, date:JSON.stringify(payload), status:finalStatus, xp:Number(verdict.xp||0) }]);
-      if(ins.error) throw ins.error;
-      addAiStep('✅','Отчёт сохранён. XP записан на аккаунт текущего пользователя.', verdict.xp>0?'ok':'bad');
-      try { if (typeof loadReportXpForCurrentUser === 'function' && window.currentUser && window.state) window.state.reportXp = await loadReportXpForCurrentUser(); } catch(e) {}
-      try { if (typeof updateShopStats === 'function') updateShopStats(); } catch(e) {}
-      try { if (typeof updateModStats === 'function') updateModStats(); } catch(e) {}
-      try { if (typeof updateProfileStats === 'function') updateProfileStats(); } catch(e) {}
-      setAiBadge(verdict.xp>0?'зачтено':'отказ');
-      setStatus('', verdict.xp>0, resultHtml(verdict)+'<div style="margin-top:.7rem;color:'+(verdict.xp>0?'var(--color-success)':'var(--color-error)')+';font-weight:900;">'+(verdict.xp>0?'✅ Отчёт одобрен автоматически и добавлен в таблицу. Начислено '+verdict.xp+' XP.':'⛔ Отчёт отклонён автоматически. В таблицу записано 0 XP.')+'</div>');
-      files=[]; renderPreview(); ['reportWorkInput','reportLinkInput','reportClaimedTimeInput'].forEach(function(id){ var el=$(id); if(el) el.value=''; }); var q=$('reportQualityInput'); if(q) q.value='Норма';
-      try { if (typeof playSound === 'function') playSound(verdict.xp > 0 ? 'win' : 'fail'); } catch(e) {}
-      await refreshAfterInsert();
-    } catch(err){ addAiStep('⛔','Ошибка: '+scrub(err && err.message ? err.message : err),'bad'); setAiBadge('ошибка'); setStatus('Ошибка автопроверки: '+scrub(err && err.message ? err.message : err), false); }
-    finally { busy=false; if(btn){ btn.disabled=false; btn.textContent=oldText || 'Проверить отчёт и зачесть XP'; } }
+      var screenshot = await compressImage(reportFiles[0]);
+      logLine('🔎','Отправляю скриншот на AI проверку.','warn');
+      var verdict = await callAiJudge(screenshot, claimed, { nick:nick, date:date, work:work });
+      logLine('🧠','AI вердикт: ' + verdict.category + ', рекомендация ' + verdict.xp + ' XP.','ok');
+      var payload = { version:'ch89_stable_ai_review_v1', nick:nick, nickname:nick, work:work, comment:work, date:date, day:date, declaredTime:claimed, requestedTime:claimed, requestedStatus:quality || verdict.category, quality:quality || '', ai:verdict, aiStatus:verdict.status, verifiedTime:verdict.verifiedTime, category:verdict.category, recommendedXp:verdict.xp, reason:verdict.reason, proofName:reportFiles[0].name || 'report_screenshot.jpg', linkText:link, userId:u.id, email:u.email, createdAt:new Date().toISOString(), finalStatus:'У Руководства' };
+      var ins = await c.from('reports').insert([{ id:'rep_ai_review_' + Date.now() + '_' + Math.random().toString(16).slice(2), email:u.email, link:screenshot, date:JSON.stringify(payload), status:'У Руководства', xp:0 }]);
+      if (ins.error) throw ins.error;
+      logLine('💾','Отчёт сохранён со статусом «У Руководства». XP: 0.','ok');
+      setResult('', true, resultHtml(verdict));
+      reportFiles = []; renderPreview();
+      ['reportWorkInput','reportLinkInput','reportClaimedTimeInput'].forEach(function(id){ var el=$(id); if(el) el.value=''; });
+      var q = $('reportQualityInput'); if(q) q.value = 'Норма';
+      try { if (typeof playSound === 'function') playSound('win'); } catch(e) {}
+    } catch(err) {
+      logLine('⛔', err && err.message ? err.message : err, 'bad');
+      setResult('Ошибка проверки: ' + (err && err.message ? err.message : err), false);
+    } finally {
+      busy = false;
+      if (btn) { btn.disabled = false; btn.textContent = oldText || 'Проверить AI и отправить руководству'; }
+    }
     return false;
   }
-  document.addEventListener('click', function(event){ var btn=event.target && event.target.closest && event.target.closest('#submitReportBtnV154'); if(!btn) return; submitWithAi(event); return false; }, true);
+  function parsePayload(row){
+    var raw = String(row && row.date || '');
+    try { var obj = JSON.parse(raw); if (obj && typeof obj === 'object') return obj; } catch(e) {}
+    var marker = ' | JSON: ';
+    if (raw.indexOf(marker) !== -1) { try { var o = JSON.parse(raw.slice(raw.indexOf(marker) + marker.length)); if (o && typeof o === 'object') { o.raw = raw; return o; } } catch(e) {} }
+    function pick(re){ var m = raw.match(re); return m ? String(m[1] || '').trim() : ''; }
+    return { raw:raw, nick:pick(/Ник:\s*([^|]+)/i), date:pick(/Дата:\s*([\d-]+)/i), day:pick(/Дата:\s*([\d-]+)/i), work:pick(/Работа:\s*([^|]+)/i), quality:pick(/Тип\s*сдачи:\s*([^|]+)/i) };
+  }
+  function isReportRow(row){
+    if (!row || SERVICE.has(String(row.email || ''))) return false;
+    var id = String(row.id || '');
+    if (/^(ina_|gxp_|mxp_|price_|shop_|role_|admin_|goss_)/i.test(id)) return false;
+    var p = parsePayload(row);
+    return /^rep/i.test(id) || !!(p.nick || p.date || p.day || p.work || p.ai);
+  }
+  function statusClass(status, xp){
+    status = String(status || '');
+    if (status === 'У Руководства' || status === 'На проверке' || status.indexOf('Ожидает') === 0) return 'pending';
+    if (Number(xp || 0) > 0 || ['Норма','Перенорма','Натяг','Герой дня'].indexOf(status) !== -1) return 'ok';
+    if (status === 'Отказано' || status === 'Не засчитано' || status === 'Отказ') return 'bad';
+    return '';
+  }
+  function pendingStatus(status){ status = String(status || ''); return status === 'У Руководства' || status === 'На проверке' || status.indexOf('Ожидает') === 0; }
+  function proofHtml(row, payload){
+    var link = String(row.link || payload.link || '');
+    var html = '';
+    if (link && link.indexOf('data:image') === 0) html += '<div class="ch89-stable-proof"><img src="'+link+'" alt="Доказательство" data-ch89-zoom="1"></div>';
+    else if (link) html += '<a class="btn btn-secondary" href="'+esc(link)+'" target="_blank" rel="noreferrer">📎 Открыть доказательство</a>';
+    if (payload.linkText) html += '<a class="btn btn-secondary" href="'+esc(payload.linkText)+'" target="_blank" rel="noreferrer">🔗 Дополнительная ссылка</a>';
+    return html || '<span class="ch89-stable-pill">Без вложения</span>';
+  }
+  function aiHtml(payload){
+    var ai = payload.ai || payload.aiVerdict || null;
+    if (!ai && (payload.category || payload.reason || payload.verifiedTime)) ai = { category:payload.category, xp:payload.recommendedXp || payload.xp, reason:payload.reason, verifiedTime:payload.verifiedTime, status:payload.aiStatus };
+    if (!ai) return '<div class="ch89-stable-muted">AI вердикт отсутствует: старый отчёт или ручная сдача.</div>';
+    return '<div class="ch89-stable-ai-box"><span class="ch89-stable-pill pending">Вердикт AI</span>' +
+      '<div class="ch89-stable-muted"><b>Рекомендация:</b> '+esc(ai.category || '—')+' · '+esc(ai.xp || 0)+' XP</div>' +
+      '<div class="ch89-stable-muted"><b>Время:</b> '+esc(ai.verifiedTime || '—')+'</div>' +
+      '<div class="ch89-stable-muted"><b>Причина:</b> '+esc(ai.reason || '—')+'</div></div>';
+  }
+  function cardHtml(row){
+    var p = parsePayload(row), status = String(row.status || 'У Руководства'), pending = pendingStatus(status), ai = p.ai || {}, suggested = normClean(p.finalNorm || p.category || ai.category || p.requestedStatus || p.quality);
+    var date = String(p.day || p.date || '').slice(0,10) || 'дата не указана';
+    var nick = p.nick || p.nickname || row.email || 'Модератор';
+    var work = p.work || p.comment || p.raw || '';
+    var statusCls = statusClass(status, row.xp);
+    var normOptions = NORMS.map(function(n){ return '<option value="'+n.value+'" '+(suggested===n.value?'selected':'')+'>'+n.value+' · '+n.xp+' XP</option>'; }).join('');
+    var actions = pending ? '<select class="ch89-stable-norm-select" data-stable-norm="'+esc(row.id)+'">'+normOptions+'</select><div class="ch89-stable-actions"><button class="btn btn-secondary" style="border-color:#ffbf47;color:#ffdf91" type="button" data-stable-change-norm="'+esc(row.id)+'">Поменять тип нормы</button><button class="btn btn-secondary" style="border-color:#52c77b;color:#7fe8a0" type="button" data-stable-issue-xp="'+esc(row.id)+'">Выдать ХП</button><button class="btn btn-secondary" style="border-color:var(--color-error);color:var(--color-error)" type="button" data-stable-reject="'+esc(row.id)+'">Отказать</button></div>' : '<div class="ch89-stable-muted">Решение уже сохранено. В таблицу выставлено: '+esc(status)+' · '+Number(row.xp || 0)+' XP.</div>';
+    return '<article class="ch89-stable-review-card" data-stable-card="'+esc(row.id)+'"><div class="ch89-stable-review-head"><div><strong>'+esc(nick)+'</strong><div class="ch89-stable-muted">'+esc(date)+' · '+esc(row.email || '')+'</div></div><span class="ch89-stable-pill '+statusCls+'">'+esc(status)+' · '+Number(row.xp || 0)+' XP</span></div><div class="ch89-stable-muted">'+esc(work || 'Комментарий не указан')+'</div>'+proofHtml(row,p)+aiHtml(p)+actions+'</article>';
+  }
+  async function renderReview(){
+    if (!(await isLeader())) { alert('Проверка отчётности доступна только руководству.'); return; }
+    var area = $('reportsListArea');
+    if (!area) { var form=$('reportFormArea') || document.body; form.insertAdjacentHTML('beforeend','<div id="reportsListArea"></div>'); area=$('reportsListArea'); }
+    if (area.dataset.ch89StableOpen === '1') { area.dataset.ch89StableOpen='0'; area.classList.remove('ch89-stable-review-open'); area.style.display='none'; return; }
+    area.dataset.ch89StableOpen='1'; area.classList.add('ch89-stable-review-open'); area.innerHTML='<div class="ch89-stable-review-card">Загружаю сданные отчёты...</div>';
+    var c = client(); if (!c) { area.innerHTML='<div class="ch89-stable-review-card">База ещё не загрузилась.</div>'; return; }
+    try {
+      var r = await c.from('reports').select('*').order('id', { ascending:false }).limit(300);
+      if (r.error) throw r.error;
+      var rows = (r.data || []).filter(isReportRow);
+      rows.sort(function(a,b){
+        var ap = parsePayload(a), bp = parsePayload(b);
+        var apend = pendingStatus(a.status) ? 1 : 0, bpend = pendingStatus(b.status) ? 1 : 0;
+        if (bpend !== apend) return bpend - apend;
+        return String(b.id || '').localeCompare(String(a.id || ''));
+      });
+      area.innerHTML = rows.length ? rows.map(cardHtml).join('') : '<div class="ch89-stable-review-card">Сданных отчётов пока нет.</div>';
+    } catch(e) { area.innerHTML='<div class="ch89-stable-review-card" style="color:var(--color-error);">Ошибка загрузки: '+esc(e && e.message || e)+'</div>'; }
+  }
+  async function updateReportDecision(id, action){
+    var c = client(), u = await authUser();
+    if (!c) { alert('База ещё не загрузилась.'); return; }
+    if (!(await isLeader())) { alert('Проверять отчёты может только руководство.'); return; }
+    try {
+      var got = await c.from('reports').select('*').eq('id', id).maybeSingle();
+      if (got.error) throw got.error;
+      var row = got.data; if (!row) { alert('Отчёт не найден.'); return; }
+      if (u && row.email && String(row.email).toLowerCase() === String(u.email || '').toLowerCase()) { alert('Нельзя проверять свой собственный отчёт.'); return; }
+      var card = document.querySelector('[data-stable-card="'+CSS.escape(id)+'"]');
+      var sel = card && card.querySelector('[data-stable-norm]');
+      var norm = normClean(sel && sel.value);
+      var p = parsePayload(row);
+      var update;
+      if (action === 'reject') {
+        p.finalStatus = 'Отказано'; p.finalNorm = ''; p.finalXp = 0; p.rejectedBy = u && (u.email || u.id) || ''; p.rejectedAt = new Date().toISOString();
+        update = { status:'Отказано', xp:0, date:JSON.stringify(p) };
+      } else {
+        var xp = normXp(norm);
+        p.finalStatus = norm; p.finalNorm = norm; p.finalXp = xp; p.checkedBy = u && (u.email || u.id) || ''; p.checkedAt = new Date().toISOString();
+        update = { status:norm, xp:xp, date:JSON.stringify(p) };
+      }
+      var res = await c.from('reports').update(update).eq('id', id);
+      if (res.error) throw res.error;
+      var area = $('reportsListArea'); if (area) area.dataset.ch89StableOpen = '0';
+      await renderReview();
+      try { if (typeof window.loadReportsTable === 'function') setTimeout(function(){ window.loadReportsTable(); }, 250); } catch(e) {}
+      try { if (window.T73_V94_REPORTS && typeof window.T73_V94_REPORTS.load === 'function') setTimeout(function(){ window.T73_V94_REPORTS.load(); }, 350); } catch(e) {}
+    } catch(e){ alert('Ошибка сохранения решения: ' + (e && e.message ? e.message : e)); }
+  }
+  function ensureUi(){
+    var form = $('reportFormArea') || $('mode-report');
+    if (form) {
+      if (!$('reportClaimedTimeInput')) {
+        var anchor = $('reportDateInput') || $('reportWorkInput') || $('reportLinkInput') || form;
+        var field = '<div class="admin-field" id="reportClaimedTimeField"><label>Заявленное время работы:</label><input id="reportClaimedTimeInput" class="support-input" type="text" placeholder="Например: 10 минут / 30 минут / 1 час"></div>';
+        if (anchor && anchor.closest && anchor.closest('.admin-field')) anchor.closest('.admin-field').insertAdjacentHTML('afterend', field); else form.insertAdjacentHTML('afterbegin', field);
+      }
+      if (!$('ch89StableReportBox')) {
+        var place = ($('reportLinkInput') && $('reportLinkInput').closest && $('reportLinkInput').closest('.admin-field')) || $('reportClaimedTimeField') || form;
+        place.insertAdjacentHTML('afterend','<div id="ch89StableReportBox"><div class="ch89-stable-report-title"><span>AI проверка без автозачёта</span><span class="ch89-stable-pill pending">У Руководства</span></div><div class="ch89-stable-report-help">AI проверяет скриншот и пишет рекомендацию. XP не начисляется автоматически. Руководство отдельно нажимает «Выдать ХП» или «Отказать».</div><div class="admin-field"><label>Скриншот для проверки:</label><input id="ch89StableReportFileInput" class="support-input" type="file" accept="image/*,.png,.jpg,.jpeg,.webp"><div id="ch89StableReportPreview"></div></div><button id="ch89StableSubmitReportBtn" type="button">Проверить AI и отправить руководству</button><div id="ch89StableReportLog"></div></div>');
+      }
+      renderPreview();
+    }
+    var admin = $('adminPanelArea') || form;
+    if (admin && !$('ch89StableReviewReportsBtn')) {
+      var old = $('viewReportsBtnV63') || $('viewReportsBtn');
+      if (old && old.parentElement) old.insertAdjacentHTML('afterend','<button id="ch89StableReviewReportsBtn" type="button">Проверить отчётность</button>');
+      else admin.insertAdjacentHTML('beforeend','<button id="ch89StableReviewReportsBtn" type="button">Проверить отчётность</button>');
+    }
+    var review = $('ch89StableReviewReportsBtn');
+    if (review) review.style.display = isLeaderFast() ? 'inline-flex' : 'none';
+  }
+  document.addEventListener('change', function(e){
+    if (e.target && e.target.id === 'ch89StableReportFileInput') { reportFiles = Array.prototype.slice.call(e.target.files || []).filter(function(f){ return /^image\//i.test(String(f.type || '')); }).slice(0,1); e.target.value=''; renderPreview(); }
+  }, true);
+  document.addEventListener('click', function(e){
+    var remove = e.target && e.target.closest && e.target.closest('[data-ch89-remove-file]');
+    if (remove) { e.preventDefault(); reportFiles.splice(Number(remove.getAttribute('data-ch89-remove-file')),1); renderPreview(); return; }
+    var submit = e.target && e.target.closest && e.target.closest('#ch89StableSubmitReportBtn');
+    if (submit) { e.preventDefault(); e.stopPropagation(); submitReport(); return; }
+    var review = e.target && e.target.closest && e.target.closest('#ch89StableReviewReportsBtn');
+    if (review) { e.preventDefault(); e.stopPropagation(); renderReview(); return; }
+    var change = e.target && e.target.closest && e.target.closest('[data-stable-change-norm]');
+    if (change) { e.preventDefault(); var card = change.closest('[data-stable-card]'); var sel = card && card.querySelector('[data-stable-norm]'); if (sel) { var idx = Math.max(0, NORMS.findIndex(function(n){ return n.value === sel.value; })); sel.value = NORMS[(idx + 1) % NORMS.length].value; sel.focus(); } return; }
+    var issue = e.target && e.target.closest && e.target.closest('[data-stable-issue-xp]');
+    if (issue) { e.preventDefault(); updateReportDecision(issue.getAttribute('data-stable-issue-xp'), 'issue'); return; }
+    var reject = e.target && e.target.closest && e.target.closest('[data-stable-reject]');
+    if (reject) { e.preventDefault(); updateReportDecision(reject.getAttribute('data-stable-reject'), 'reject'); return; }
+    var zoom = e.target && e.target.closest && e.target.closest('[data-ch89-zoom]');
+    if (zoom && $('imageModal') && $('imageModalSrc')) { $('imageModal').style.display='flex'; $('imageModalSrc').src=zoom.src; }
+  }, false);
+
+  window.processReport = function(id, statusText, xpAmount){
+    if (String(statusText || '').toLowerCase().indexOf('отказ') !== -1 || String(statusText || '') === 'Не засчитано') return updateReportDecision(id, 'reject');
+    return updateReportDecision(id, 'issue');
+  };
+  window.CH89_STABLE_REPORT_REVIEW = { boot:ensureUi, submit:submitReport, review:renderReview, decide:updateReportDecision };
+
   function boot(){ ensureUi(); }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', boot); else boot();
-  [80,220,600,1200,2500,5200,9000].forEach(function(ms){ setTimeout(boot,ms); });
-  try { new MutationObserver(function(){ clearTimeout(window.__CH89_V170_AI_TIMER__); window.__CH89_V170_AI_TIMER__=setTimeout(boot,90); }).observe(document.documentElement,{childList:true,subtree:true}); } catch(e){}
-  window.CH89_V170_AI_REPORTS = { boot:boot, submit:submitWithAi };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+  [250, 800, 1800, 3600, 6500].forEach(function(ms){ setTimeout(boot, ms); });
+  try { new MutationObserver(function(){ clearTimeout(window.__CH89_STABLE_REPORT_BOOT__); window.__CH89_STABLE_REPORT_BOOT__ = setTimeout(boot, 180); }).observe(document.documentElement, { childList:true, subtree:true }); } catch(e) {}
 })();
 </script>
-<!-- === /CH89 V170 AI report judge === -->
+<!-- === /CH89 STABLE REPORT REVIEW === -->
 
 
 
@@ -28595,10 +28924,23 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
     setMsg('', 'info');
   }
 
+  function showCheckingGate(){
+    var gate = $('ch89EntryAuthGate');
+    if (gate) gate.hidden = false;
+    document.body.classList.add('ch89-auth-lock');
+    document.body.classList.add('ch89-session-checking');
+    document.body.classList.remove('ch89-auth-ready');
+    var loader = $('ch89AuthLoader');
+    if (loader) loader.style.display = 'grid';
+    var modal = $('authModal');
+    if (modal) modal.style.display = 'none';
+  }
+
   function showGate(){
     var gate = $('ch89EntryAuthGate');
     if (gate) gate.hidden = false;
     document.body.classList.add('ch89-auth-lock');
+    document.body.classList.remove('ch89-session-checking');
     document.body.classList.remove('ch89-auth-ready');
     var modal = $('authModal');
     if (modal) modal.style.display = 'none';
@@ -28607,6 +28949,7 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
   function hideGate(){
     var gate = $('ch89EntryAuthGate');
     if (gate) gate.hidden = true;
+    document.body.classList.remove('ch89-session-checking');
     document.body.classList.remove('ch89-auth-lock');
     document.body.classList.add('ch89-auth-ready');
     document.body.style.overflow = '';
@@ -28615,9 +28958,11 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
   async function checkSession(){
     var c = client();
     var loader = $('ch89AuthLoader');
+    if (loader) loader.style.display = 'grid';
     if (!c || !c.auth) {
+      document.body.classList.remove('ch89-session-checking');
       showGate();
-      if (loader) loader.textContent = 'Ошибка подключения авторизации';
+      if (loader) loader.innerHTML = '<div class="ch89-auto-login-demo"><div class="ch89-auto-login-title"><span class="ch89-auth-dot"></span><span>Ошибка подключения авторизации</span></div></div>';
       setMsg('Supabase ещё не подключился. Обновите страницу через пару секунд.', 'bad');
       return;
     }
@@ -28630,6 +28975,7 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
         return;
       }
     } catch(e) {}
+    document.body.classList.remove('ch89-session-checking');
     showGate();
     if (loader) loader.style.display = 'none';
   }
@@ -28725,8 +29071,33 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
     }
   }
 
+  function startAuthTypingDemo(){
+    var email = $('ch89AutoLoginEmail'), pass = $('ch89AutoLoginPass'), state = $('ch89AutoLoginState');
+    if (!email || email.dataset.bound === '1') return;
+    email.dataset.bound = '1';
+    var steps = [
+      [email, 'session@ch89.local', 28],
+      [pass, '••••••••••', 34],
+      [state, 'проверяю токен', 30]
+    ];
+    var idx = 0;
+    function type(el, text, speed, done){
+      var i = 0; el.textContent = '';
+      (function tick(){
+        el.textContent = text.slice(0, i++);
+        if (i <= text.length) setTimeout(tick, speed);
+        else if (done) setTimeout(done, 120);
+      })();
+    }
+    (function next(){
+      if (idx >= steps.length) return;
+      var s = steps[idx++]; type(s[0], s[1], s[2], next);
+    })();
+  }
+
   function bind(){
-    showGate();
+    showCheckingGate();
+    startAuthTypingDemo();
     setMode('login');
     var loginTab = $('ch89AuthLoginTab'), regTab = $('ch89AuthRegisterTab'), submitBtn = $('ch89AuthSubmit'), switchBtn = $('ch89AuthSwitch');
     if (loginTab) loginTab.onclick = function(){ setMode('login'); };
@@ -28766,7 +29137,7 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
   else bind();
 
   setTimeout(checkSession, 800);
-  setTimeout(checkSession, 2200);
+  setTimeout(function(){ if (!document.body.classList.contains('ch89-auth-ready')) checkSession(); }, 2200);
   try {
     var c = client();
     if (c && c.auth && c.auth.onAuthStateChange) {
@@ -29331,6 +29702,72 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
 })();
 </script>
 <!-- === /CH89 V173 creator-only editors hardening === -->
+
+
+
+<!-- === CH89 V173: leader-only single report-review button runtime === -->
+<script id="ch89-v173-report-button-auth-runtime">
+(function(){
+  'use strict';
+  if (window.__CH89_V173_RUNTIME__) return;
+  window.__CH89_V173_RUNTIME__ = true;
+  function $(id){ return document.getElementById(id); }
+  function client(){ try { if (typeof supa !== 'undefined' && supa && supa.auth) return supa; } catch(e){} return window.supa || window.__T73_SUPA || window.t73Supa || window.supabaseClient || null; }
+  function lower(v){ return String(v || '').toLowerCase(); }
+  function creator(){ try { return lower(typeof creatorEmail !== 'undefined' ? creatorEmail : 'daniiltimosin72@gmail.com'); } catch(e){ return 'daniiltimosin72@gmail.com'; } }
+  function arr(name){ try { if (Array.isArray(window[name])) return window[name]; } catch(e){} try { return eval('typeof '+name+' !== "undefined" && Array.isArray('+name+') ? '+name+' : []'); } catch(e){ return []; } }
+  async function current(){
+    try { if (window.currentUser && (window.currentUser.id || window.currentUser.email)) return window.currentUser; } catch(e){}
+    try { if (typeof currentUser !== 'undefined' && currentUser && (currentUser.id || currentUser.email)) return currentUser; } catch(e){}
+    var c = client();
+    if (c && c.auth) {
+      try { var u = await c.auth.getUser(); if (u && u.data && u.data.user) { window.currentUser = u.data.user; return u.data.user; } } catch(e){}
+      try { var s = await c.auth.getSession(); var user = s && s.data && s.data.session && s.data.session.user; if (user) { window.currentUser = user; return user; } } catch(e){}
+    }
+    return null;
+  }
+  async function isLeader(){
+    var u = await current();
+    if (!u) return false;
+    var email = lower(u.email), id = String(u.id || u.user_id || '');
+    if (email && email === creator()) return true;
+    if (arr('adminEmails').map(lower).indexOf(email) !== -1) return true;
+    if (arr('dynamicModLeaders').map(String).indexOf(id) !== -1) return true;
+    var c = client();
+    if (!c || typeof c.from !== 'function') return false;
+    try {
+      var keys = [id, u.email].filter(Boolean);
+      var r = await c.from('reports').select('status,link').eq('email','ADMIN_ROLE').in('link', keys).limit(1000);
+      var rows = (r && r.data) || [];
+      return rows.some(function(row){
+        var st = lower(row.status);
+        return st === 'leadership' || st === 'руководство' || st.indexOf('руковод') !== -1 || st.indexOf('lead') !== -1 || st.indexOf('admin') !== -1 || st === 'goss_admin_all';
+      });
+    } catch(e) { return false; }
+  }
+  function hideDuplicates(){
+    ['viewReportsBtnV63','viewReportsBtn','govV4CheckReportsBtn','t73V146ReportHint'].forEach(function(id){ var el=$(id); if(el) el.style.setProperty('display','none','important'); });
+    document.querySelectorAll('.t73-v146-check-bottom').forEach(function(el){ el.style.setProperty('display','none','important'); });
+    var stable = $('ch89StableReviewReportsBtn');
+    if (stable) { stable.type='button'; stable.textContent='Проверить отчётность'; stable.classList.add('btn','btn-primary'); }
+  }
+  async function refresh(){
+    hideDuplicates();
+    var ok = await isLeader();
+    document.body.classList.toggle('ch89-report-leader-on', !!ok);
+    var stable = $('ch89StableReviewReportsBtn');
+    if (stable) stable.style.setProperty('display', ok ? 'inline-flex' : 'none', 'important');
+    var gossReports = document.querySelectorAll('#gossOrgActionNavV4 [data-view="reports"], #subNavModeration #v25ModViewReportsBtn');
+    gossReports.forEach(function(b){ b.style.setProperty('display', ok ? 'inline-flex' : 'none', 'important'); });
+  }
+  function boot(){ hideDuplicates(); clearTimeout(window.__CH89_V173_REFRESH__); window.__CH89_V173_REFRESH__ = setTimeout(refresh, 120); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+  [400, 1200, 2600, 5200, 9000].forEach(function(ms){ setTimeout(boot, ms); });
+  try { new MutationObserver(function(){ clearTimeout(window.__CH89_V173_MO__); window.__CH89_V173_MO__ = setTimeout(boot, 160); }).observe(document.documentElement, { childList:true, subtree:true }); } catch(e){}
+  try { var c=client(); if (c && c.auth && c.auth.onAuthStateChange) c.auth.onAuthStateChange(function(){ setTimeout(refresh, 250); }); } catch(e){}
+})();
+</script>
+<!-- === /CH89 V173 === -->
 
 </body>
 </html>
