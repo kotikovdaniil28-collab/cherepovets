@@ -1349,9 +1349,11 @@
   /* Проверка отчётности: оставляем одну кнопку и только для руководства. */
   #viewReportsBtnV63,
   #viewReportsBtn,
+  #reportsTableBtn,
   #govV4CheckReportsBtn,
+  #t73V131DirectUploadRow,
   .t73-v146-check-bottom,
-  #t73V146ReportHint { display:none !important; }
+  #t73V146ReportHint { display:none !important; visibility:hidden !important; pointer-events:none !important; }
   body:not(.ch89-report-leader-on) #ch89StableReviewReportsBtn,
   body:not(.ch89-report-leader-on) #gossOrgActionNavV4 [data-view="reports"],
   body:not(.ch89-report-leader-on) #subNavModeration #v25ModViewReportsBtn { display:none !important; }
@@ -23753,29 +23755,10 @@ body.t73-v44-cat-organizations #gossOrgActionNavV4.t73-v44-goss-actions{display:
     c.textContent = n ? ('Выбрано фото: ' + n) : 'Фото не выбрано';
   }
   function ensureDirectUploadButton(){
-    var link = $('reportLinkInput');
-    if (!link) return;
-    if (!$('t73V131DirectUploadRow')) {
-      var row = document.createElement('div');
-      row.id = 't73V131DirectUploadRow';
-      row.innerHTML = '<button id="t73V131DirectPhotoBtn" type="button">📎 Загрузить фото напрямую</button><span id="t73V131PhotoCount">Фото не выбрано</span>';
-      var field = link.closest('.admin-field') || link.parentElement;
-      if (field) field.insertAdjacentElement('afterend', row); else link.insertAdjacentElement('afterend', row);
-    }
-    var btn = $('t73V131DirectPhotoBtn');
-    if (btn && btn.dataset.bound !== '1') {
-      btn.dataset.bound = '1';
-      btn.addEventListener('click', function(e){
-        e.preventDefault();
-        e.stopPropagation();
-        var input = primaryReportFileInput();
-        if (!input) { alert('Поле загрузки фото ещё не загрузилось. Откройте раздел отчётности ещё раз.'); return; }
-        input.disabled = false;
-        input.removeAttribute('aria-hidden');
-        try { input.click(); } catch(err) { alert('Не удалось открыть выбор файла: ' + (err && err.message ? err.message : err)); }
-      }, true);
-    }
-    updatePhotoCount();
+    // В стабильной отчётности отдельная кнопка прямой загрузки отключена:
+    // она выбирала файлы в старый input, из-за чего AI-блок видел 0 скриншотов.
+    var row = $('t73V131DirectUploadRow');
+    if (row && row.parentElement) row.parentElement.removeChild(row);
   }
 
   function parsePayload(raw){
@@ -25786,6 +25769,8 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
   #submitReportBtnV57,
   #submitReportBtnV62,
   #submitReportBtnV154,
+  #reportsTableBtn,
+  #t73V131DirectUploadRow,
   #reportFileInput,
   #reportFileInputV62,
   #reportFileBoxV62,
@@ -25861,6 +25846,37 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
     color: #fff;
     font-weight: 950;
     cursor: pointer;
+  }
+  .ch89-stable-upload-field {
+    display: grid;
+    gap: .6rem;
+  }
+  #ch89StableReportFileInput {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+  #ch89StablePickFileBtn {
+    display: inline-flex;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+    gap: .55rem;
+    min-height: 46px;
+    border-radius: 16px;
+    border: 1px solid rgba(82,199,123,.58);
+    background: linear-gradient(135deg, #52c77b, #8fe0a8);
+    color: #07100b;
+    font-weight: 950;
+    cursor: pointer;
+    box-shadow: 0 12px 30px rgba(82,199,123,.18);
+  }
+  #ch89StablePhotoCount {
+    color: var(--color-text-muted);
+    font-size: .86rem;
+    font-weight: 800;
   }
   #ch89StableSubmitReportBtn,
   #ch89StableReviewReportsBtn {
@@ -25998,6 +26014,7 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
   }
   .btn:hover,
   .mode-btn:hover,
+  #ch89StablePickFileBtn:hover,
   #ch89StableSubmitReportBtn:hover,
   #ch89StableReviewReportsBtn:hover {
     filter: brightness(1.04);
@@ -26221,6 +26238,8 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
   }
   function renderPreview(){
     var box = $('ch89StableReportPreview');
+    var counter = $('ch89StablePhotoCount');
+    if (counter) counter.textContent = reportFiles.length ? ('Выбран скриншот: ' + (reportFiles[0].name || 'файл')) : 'Фото не выбрано';
     if (!box) return;
     if (!reportFiles.length) { box.innerHTML = '<div class="ch89-stable-report-help">Скриншот для AI проверки ещё не выбран.</div>'; return; }
     box.innerHTML = reportFiles.map(function(file, i){ var url = URL.createObjectURL(file); return '<div class="ch89-stable-file-card"><button class="ch89-stable-file-remove" type="button" data-ch89-remove-file="'+i+'">×</button><img src="'+url+'" alt="Скриншот" onload="try{URL.revokeObjectURL(this.src)}catch(e){}"><span>'+esc(file.name || ('screen_'+(i+1)))+'</span></div>'; }).join('');
@@ -26391,7 +26410,21 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
       try { if (window.T73_V94_REPORTS && typeof window.T73_V94_REPORTS.load === 'function') setTimeout(function(){ window.T73_V94_REPORTS.load(); }, 350); } catch(e) {}
     } catch(e){ alert('Ошибка сохранения решения: ' + (e && e.message ? e.message : e)); }
   }
+  function hideOldReportUi(){
+    ['viewReportsBtnV63','viewReportsBtn','reportsTableBtn','govV4CheckReportsBtn','t73V146ReportHint'].forEach(function(id){ var el=$(id); if(el){ el.style.setProperty('display','none','important'); el.style.setProperty('visibility','hidden','important'); el.style.setProperty('pointer-events','none','important'); } });
+    var direct = $('t73V131DirectUploadRow');
+    if (direct && direct.parentElement) direct.parentElement.removeChild(direct);
+    qsa('button').forEach(function(btn){
+      var txt = String(btn.textContent || '').replace(/\s+/g,' ').trim().toLowerCase();
+      if (btn.id !== 'ch89StableReviewReportsBtn' && /проверить\s+(сданные\s+)?отч[её]т/.test(txt)) {
+        btn.style.setProperty('display','none','important');
+        btn.style.setProperty('visibility','hidden','important');
+        btn.style.setProperty('pointer-events','none','important');
+      }
+    });
+  }
   function ensureUi(){
+    hideOldReportUi();
     var form = $('reportFormArea') || $('mode-report');
     if (form) {
       if (!$('reportClaimedTimeInput')) {
@@ -26401,7 +26434,7 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
       }
       if (!$('ch89StableReportBox')) {
         var place = ($('reportLinkInput') && $('reportLinkInput').closest && $('reportLinkInput').closest('.admin-field')) || $('reportClaimedTimeField') || form;
-        place.insertAdjacentHTML('afterend','<div id="ch89StableReportBox"><div class="ch89-stable-report-title"><span>AI проверка без автозачёта</span><span class="ch89-stable-pill pending">У Руководства</span></div><div class="ch89-stable-report-help">AI проверяет скриншот и пишет рекомендацию. Отправка теперь сохраняет отчёт даже если хранилище фото временно недоступно. XP не начисляется автоматически.</div><div class="admin-field"><label>Скриншот для проверки:</label><input id="ch89StableReportFileInput" class="support-input" type="file" accept="image/*,.png,.jpg,.jpeg,.webp"><div id="ch89StableReportPreview"></div></div><button id="ch89StableSubmitReportBtn" type="button">Проверить AI и отправить руководству</button><div id="ch89StableReportLog"></div></div>');
+        place.insertAdjacentHTML('afterend','<div id="ch89StableReportBox"><div class="ch89-stable-report-title"><span>AI проверка без автозачёта</span><span class="ch89-stable-pill pending">У Руководства</span></div><div class="ch89-stable-report-help">AI проверяет скриншот и пишет рекомендацию. Ссылка может быть дополнением, но скриншот выбирается здесь.</div><div class="admin-field ch89-stable-upload-field"><label>Скриншот для проверки:</label><input id="ch89StableReportFileInput" class="support-input" type="file" accept="image/*,.png,.jpg,.jpeg,.webp"><button id="ch89StablePickFileBtn" type="button">📎 Выбрать скриншот JPG / PNG / WebP</button><div id="ch89StablePhotoCount">Фото не выбрано</div><div id="ch89StableReportPreview"></div></div><button id="ch89StableSubmitReportBtn" type="button">Проверить AI и отправить руководству</button><div id="ch89StableReportLog"></div></div>');
       }
       renderPreview();
     }
@@ -26418,13 +26451,16 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
     if (e.target && e.target.id === 'ch89StableReportFileInput') {
       reportFiles = Array.prototype.slice.call(e.target.files || []).filter(isImageFile).slice(0,1);
       e.target.value='';
-      if (!reportFiles.length) setResult('Выберите изображение JPG, PNG или WebP. HEIC/неизвестный формат браузер не сможет проверить.', false);
+      if (!reportFiles.length) setResult('Выбранный файл не является JPG, PNG или WebP. HEIC лучше пересохранить в JPG/PNG.', false);
+      else setResult('Скриншот выбран. Теперь нажмите «Проверить AI и отправить руководству».', true);
       renderPreview();
     }
   }, true);
   document.addEventListener('click', function(e){
     var remove = e.target && e.target.closest && e.target.closest('[data-ch89-remove-file]');
     if (remove) { e.preventDefault(); reportFiles.splice(Number(remove.getAttribute('data-ch89-remove-file')),1); renderPreview(); return; }
+    var pick = e.target && e.target.closest && e.target.closest('#ch89StablePickFileBtn');
+    if (pick) { e.preventDefault(); e.stopPropagation(); var input=$('ch89StableReportFileInput'); if(input){ input.disabled=false; input.click(); } return; }
     var submit = e.target && e.target.closest && e.target.closest('#ch89StableSubmitReportBtn');
     if (submit) { e.preventDefault(); e.stopPropagation(); submitReport(); return; }
     var review = e.target && e.target.closest && e.target.closest('#ch89StableReviewReportsBtn');
@@ -26451,7 +26487,6 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
   try { new MutationObserver(function(){ clearTimeout(window.__CH89_STABLE_REPORT_BOOT__); window.__CH89_STABLE_REPORT_BOOT__ = setTimeout(boot, 180); }).observe(document.documentElement, { childList:true, subtree:true }); } catch(e) {}
 })();
 </script>
-<!-- patched: photo upload/save fallback v2, 2026-06-09 -->
 <!-- === /CH89 STABLE REPORT REVIEW === -->
 
 
@@ -28788,11 +28823,11 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
     pointer-events: none !important;
   }
 
-  /* Таблица отчётов должна оставаться именно в разделе «Общее». */
+  /* Проверка отчётности открывается одной кнопкой в панели руководства; старую кнопку раздела скрываем, чтобы не было дублей. */
   #subNavGeneral #reportsTableBtn {
-    display: inline-flex !important;
-    visibility: visible !important;
-    pointer-events: auto !important;
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
   }
 
   /* Убираем рывки от поздних hover/animation патчей, но не блокируем клики. */
@@ -29929,8 +29964,9 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
     } catch(e) { return false; }
   }
   function hideDuplicates(){
-    ['viewReportsBtnV63','viewReportsBtn','govV4CheckReportsBtn','t73V146ReportHint'].forEach(function(id){ var el=$(id); if(el) el.style.setProperty('display','none','important'); });
+    ['viewReportsBtnV63','viewReportsBtn','reportsTableBtn','govV4CheckReportsBtn','t73V146ReportHint','t73V131DirectUploadRow'].forEach(function(id){ var el=$(id); if(el){ el.style.setProperty('display','none','important'); el.style.setProperty('visibility','hidden','important'); el.style.setProperty('pointer-events','none','important'); } });
     document.querySelectorAll('.t73-v146-check-bottom').forEach(function(el){ el.style.setProperty('display','none','important'); });
+    document.querySelectorAll('button').forEach(function(btn){ var txt=String(btn.textContent||'').replace(/\s+/g,' ').trim().toLowerCase(); if(btn.id !== 'ch89StableReviewReportsBtn' && /проверить\s+(сданные\s+)?отч[её]т/.test(txt)){ btn.style.setProperty('display','none','important'); btn.style.setProperty('visibility','hidden','important'); btn.style.setProperty('pointer-events','none','important'); } });
     var stable = $('ch89StableReviewReportsBtn');
     if (stable) { stable.type='button'; stable.textContent='Проверить отчётность'; stable.classList.add('btn','btn-primary'); }
   }
