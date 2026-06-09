@@ -4707,11 +4707,13 @@
         }
 
         function updateModStats() {
+            normalizeModTrainerCounters();
             const xp = availableXp();
             document.getElementById("resolvedValue").textContent = state.resolved; document.getElementById("correctValue").textContent = state.correct; document.getElementById("mistakeValue").textContent = state.mistakes; document.getElementById("xpValue").textContent = xp;
             document.getElementById("xpFill").style.width = (Math.min(1, (state.correct % 10 || (state.correct ? 10 : 0)) / 10) * 100) + "%";
             document.getElementById("resultBanner").firstElementChild.innerHTML = `<strong>${!state.started ? "Результат: смена ещё не начата" : "Результат: смена в процессе"}</strong>`;
             document.getElementById("resultHint").textContent = !state.started ? "Нажми «Начать смену», чтобы получить первое сообщение." : `Сейчас доступно ${xp} XP.`;
+            saveModTrainerCountersLocal();
             updateShopStats(); renderQuests();
         }
         
@@ -6215,8 +6217,53 @@
             const { data } = await supa.from('reports').select('xp,status').eq('email', currentUser.email);
             return (data || []).reduce((sum, row) => sum + Math.max(0, Number(row.xp || 0)), 0);
         }
+        function normalizeCounterValue(value) {
+            const n = Math.floor(Number(value || 0));
+            return Number.isFinite(n) && n > 0 ? n : 0;
+        }
+        function normalizeModTrainerCounters() {
+            if (typeof state === 'undefined' || !state) return;
+            state.correct = normalizeCounterValue(state.correct);
+            state.mistakes = normalizeCounterValue(state.mistakes);
+            state.resolved = normalizeCounterValue(state.resolved);
+            // "Обработано" — это количество завершённых ситуаций, поэтому оно не может быть меньше
+            // количества правильных ответов и текущих ошибок.
+            const minResolved = state.correct + state.mistakes;
+            if (state.resolved < minResolved) state.resolved = minResolved;
+        }
+        function modTrainerStorageKey() {
+            const id = currentUser && (currentUser.id || currentUser.user_id || currentUser.email);
+            return id ? 'ch89_mod_trainer_counters_' + String(id) : '';
+        }
+        function saveModTrainerCountersLocal() {
+            try {
+                normalizeModTrainerCounters();
+                const key = modTrainerStorageKey();
+                if (!key) return;
+                localStorage.setItem(key, JSON.stringify({
+                    resolved: state.resolved,
+                    correct: state.correct,
+                    mistakes: state.mistakes
+                }));
+            } catch (e) {}
+        }
+        function loadModTrainerCountersLocal() {
+            try {
+                const key = modTrainerStorageKey();
+                if (!key) return;
+                const saved = JSON.parse(localStorage.getItem(key) || '{}');
+                state.resolved = Math.max(normalizeCounterValue(state.resolved), normalizeCounterValue(saved.resolved));
+                state.correct = Math.max(normalizeCounterValue(state.correct), normalizeCounterValue(saved.correct));
+                state.mistakes = Math.max(normalizeCounterValue(state.mistakes), normalizeCounterValue(saved.mistakes));
+                normalizeModTrainerCounters();
+            } catch (e) {
+                normalizeModTrainerCounters();
+            }
+        }
         async function saveProgress() {
             if (!currentUser) return;
+            normalizeModTrainerCounters();
+            saveModTrainerCountersLocal();
             const payload = { user_id: currentUser.id, email: currentUser.email, nickname: currentNickname || currentUser.email, mod_correct: Number(state.correct || 0), sup_correct: Number(supportState.correct || 0), shop_spent: Number(shopState.spent || 0), ap_spent: Number(shopState.apSpent || 0) };
             const { error } = await supa.from('user_stats').upsert([payload], { onConflict: 'user_id' });
             if (error) await supa.from('user_stats').insert([payload]).select().maybeSingle();
@@ -6231,7 +6278,10 @@
                 shopState.spent = Math.max(0, Number(data.shop_spent || 0));
                 shopState.apSpent = Math.max(0, Number(data.ap_spent || 0));
             } else await saveProgress();
+            loadModTrainerCountersLocal();
+            normalizeModTrainerCounters();
             state.reportXp = await loadReportXpForCurrentUser();
+            saveModTrainerCountersLocal();
         }
 
         async function ensureCurrentUserStatsReadable() {
@@ -6436,6 +6486,7 @@
             const ok = state.current && action === state.current.type; state.resolved++;
             if (ok) { state.correct++; playSound('ok'); pushLog('✅ Вердикт принят: ' + action + ' по сообщению от ' + (state.current.user || 'игрока') + '.'); }
             else { state.mistakes++; playSound('fail'); pushLog('❌ Ошибка: выбрано ' + action + ', нужно было ' + (state.current ? state.current.type : 'неизвестно') + '.'); }
+            normalizeModTrainerCounters();
             await saveProgress(); await randomMessage(); updateModStats();
         }
         async function judgeComplaint(action) {
@@ -14319,7 +14370,7 @@
                 {type:'warn',rule:'3.1',title:'Диалог: оффтоп/флуд',dialog:[['Игрок_1','Это канал заявок, пишите по форме.'],['Игрок_2','Кто со мной на водолаза? Кто со мной? Кто со мной?']],explanation:'Сообщение не по теме и повторяется в канале с назначением.'},
                 {type:'good',rule:'none',title:'Диалог: без нарушения',dialog:[['Игрок_1','Подскажите, где автосалон?'],['Игрок_2','В Южном, могу подвезти.'],['Игрок_1','Спасибо!']],explanation:'Обычная помощь без нарушения.'}
             ];
-            let q61=[], forceDialog61=false, last61=0, lastAction61='';
+            let q61=[], forceDialog61=false, last61=0, lastAction61='', lastDownAction61='', lastDownTime61=0;
             const esc61=v=>String(v??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#039;'}[c]));
             const rule61=id=>V61_RULE[id||'none']||[id||'Не указано','Проверьте актуальный регламент.','Зависит от тяжести'];
             const norm61=i=>{const o=Object.assign({},i||{});o.type=/^(good|warn|ban)$/.test(o.type)?o.type:'good';o.rule=o.rule||(o.type==='good'?'none':o.type==='ban'?'2.3':'2.1');o.explanation=o.explanation||(o.type==='good'?'Нарушения нет.':'Ситуация относится к правилу '+rule61(o.rule)[0]+'.');return o;};
@@ -14344,8 +14395,11 @@
             const oldRandom61=randomMessage;
             randomMessage=async function(){ensure61();try{const hc=await checkAndApplyHiddenChecks();if(hc){const it=norm61({type:hc.type,text:hc.text,user:hc.user||'Тайный_Покупатель',rule:hc.type==='ban'?'2.6':hc.type==='warn'?'2.1':'none',explanation:'Скрытая проверка от руководства.'});state.current=it;render61(it);return;}}catch(e){}let it;if(forceDialog61){forceDialog61=false;it=norm61(V61_DIALOGS[Math.floor(Math.random()*V61_DIALOGS.length)]);}else{const all=[...(baseModMessages||[]),...(customModMessages||[]),...V61_EXTRA,...V61_DIALOGS].map(norm61);if(!all.length){try{return oldRandom61();}catch(e){return;}}if(!q61.length||q61.some(i=>i>=all.length))q61=shuffle61(all.map((_,i)=>i));it=all[q61.pop()];}it.user=it.user||nick61();state.current=it;render61(it);};
             judge=async function(action){if(!state.started){alert('Сначала нажмите «Начать смену».');return;}if(typeof isSpamming==='function'&&isSpamming())return;if(!state.current)await randomMessage();const cur=norm61(state.current),ok=action===cur.type;state.resolved++;if(ok){state.correct++;try{playSound('ok')}catch(e){}try{pushLog('✅ Верно: '+(V61_LABEL[action]||action)+' · '+rule61(cur.rule)[0])}catch(e){}}else{state.mistakes++;try{playSound('fail')}catch(e){}try{pushLog('❌ Ошибка: выбрано '+(V61_LABEL[action]||action)+', нужно '+(V61_LABEL[cur.type]||cur.type)+' · '+rule61(cur.rule)[0])}catch(e){}}show61(action,cur,ok);try{await saveProgress()}catch(e){}await randomMessage();try{updateModStats()}catch(e){}};
-            function verdict61(e){const t=e.target;if(!t||!t.closest)return null;const btn=t.closest('#mode-moderation button[data-action]');if(!btn)return null;const a=btn.getAttribute('data-action');return /^(good|warn|ban)$/.test(a||'')?a:null;}
+            function actionFromBtn61(btn){if(!btn)return null;const raw=btn.getAttribute('data-action');if(/^(good|warn|ban)$/.test(raw||''))return raw;const txt=String(btn.textContent||'').toLowerCase();if(btn.classList.contains('skip-btn')||/без\s+наруш/.test(txt))return 'good';if(btn.classList.contains('warn-btn')||/устное|пред|мут/.test(txt))return 'warn';if(btn.classList.contains('ban-btn')||/бан|перма|глобал/.test(txt))return 'ban';return null;}
+            function verdict61(e){const t=e.target;if(!t||!t.closest)return null;const btn=t.closest('#mode-moderation button[data-action]');if(!btn)return null;const direct=actionFromBtn61(btn);if((e.type==='pointerup'||e.type==='click')&&lastDownAction61&&Date.now()-lastDownTime61<850)return lastDownAction61;return direct;}
+            function rememberDown61(e){const t=e.target;if(!t||!t.closest)return;const btn=t.closest('#mode-moderation button[data-action]');const a=actionFromBtn61(btn);if(!a)return;lastDownAction61=a;lastDownTime61=Date.now();}
             function handle61(e){const a=verdict61(e);if(!a)return;const root=document.getElementById('mode-moderation');if(!root||getComputedStyle(root).display==='none')return;const now=Date.now();if(lastAction61===a&&now-last61<420){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation?.();return;}lastAction61=a;last61=now;e.preventDefault();e.stopPropagation();e.stopImmediatePropagation?.();ensure61();judge(a);}
+            window.addEventListener('pointerdown',rememberDown61,true);
             window.addEventListener('pointerup',handle61,true);
             window.addEventListener('click',handle61,true);
             window.addEventListener('keydown',e=>{if(e.key!=='Enter'&&e.key!==' ')return;const btn=document.activeElement?.closest?.('#mode-moderation button[data-action]');if(!btn)return;const a=btn.getAttribute('data-action');if(!/^(good|warn|ban)$/.test(a||''))return;e.preventDefault();e.stopPropagation();e.stopImmediatePropagation?.();judge(a);},true);
@@ -17134,6 +17188,8 @@ body.t73-v44-cat-organizations #gossOrgActionNavV4.t73-v44-goss-actions{display:
   let queueV58 = [];
   let forceDialogNextV58 = false;
   let lastInterceptV58 = 0;
+  let lastDownActionV58 = '';
+  let lastDownTimeV58 = 0;
 
   function $(id) { return document.getElementById(id); }
   function escV58(value) {
@@ -17375,6 +17431,7 @@ body.t73-v44-cat-organizations #gossOrgActionNavV4.t73-v44-goss-actions{display:
         try { if (typeof playSound === 'function') playSound('fail'); } catch (e) {}
         try { if (typeof pushLog === 'function') pushLog('❌ Ошибка: выбрано ' + typeLabelV58(action) + ', нужно ' + typeLabelV58(current.type) + ' · ' + ruleInfoV58(current.rule).id); } catch (e) {}
       }
+      try { if (typeof normalizeModTrainerCounters === 'function') normalizeModTrainerCounters(); } catch (e) {}
       showAnswerV58(action, current, ok);
       try { if (typeof saveProgress === 'function') await saveProgress(); } catch (e) {}
       await randomMessageV58();
@@ -17382,6 +17439,45 @@ body.t73-v44-cat-organizations #gossOrgActionNavV4.t73-v44-goss-actions{display:
     } catch (err) {
       console.error('T73 V58 judge error', err);
     }
+  }
+
+  function normalizeVisibleButtonsV58() {
+    const root = $('mode-moderation');
+    if (!root) return;
+    const buttons = [
+      { selector: '.skip-btn,button[data-action="good"]', action: 'good', label: TYPE_LABELS_V58.good },
+      { selector: '.warn-btn,button[data-action="warn"]', action: 'warn', label: TYPE_LABELS_V58.warn },
+      { selector: '.ban-btn,button[data-action="ban"]', action: 'ban', label: TYPE_LABELS_V58.ban }
+    ];
+    buttons.forEach(cfg => {
+      const btn = root.querySelector(cfg.selector);
+      if (!btn) return;
+      btn.setAttribute('type', 'button');
+      btn.setAttribute('data-action', cfg.action);
+      btn.disabled = false;
+      btn.removeAttribute('disabled');
+      if (String(btn.textContent || '').trim() !== cfg.label) btn.textContent = cfg.label;
+    });
+  }
+
+  function actionFromModButtonV58(btn) {
+    if (!btn) return null;
+    const raw = btn.getAttribute('data-action');
+    if (/^(good|warn|ban)$/.test(raw || '')) return raw;
+    const txt = String(btn.textContent || '').toLowerCase();
+    if (btn.classList.contains('skip-btn') || /без\s+наруш/.test(txt)) return 'good';
+    if (btn.classList.contains('warn-btn') || /устное|пред|мут/.test(txt)) return 'warn';
+    if (btn.classList.contains('ban-btn') || /бан|перма|глобал/.test(txt)) return 'ban';
+    return null;
+  }
+
+  function rememberActionDownV58(event) {
+    const btn = event.target && event.target.closest ? event.target.closest('[data-action]') : null;
+    if (!btn || !btn.closest('#mode-moderation')) return;
+    const action = actionFromModButtonV58(btn);
+    if (!action) return;
+    lastDownActionV58 = action;
+    lastDownTimeV58 = Date.now();
   }
 
   function interceptActionV58(event) {
@@ -17395,19 +17491,23 @@ body.t73-v44-cat-organizations #gossOrgActionNavV4.t73-v44-goss-actions{display:
       event.stopImmediatePropagation();
       return;
     }
+    const action = (lastDownActionV58 && now - lastDownTimeV58 < 850) ? lastDownActionV58 : actionFromModButtonV58(btn);
+    if (!action) return;
     lastInterceptV58 = now;
     event.preventDefault();
     event.stopPropagation();
     event.stopImmediatePropagation();
-    judgeV58(btn.dataset.action);
+    judgeV58(action);
   }
 
   function bootV58() {
     ensureUiV58();
+    normalizeVisibleButtonsV58();
     try { randomMessage = randomMessageV58; } catch (e) {}
     try { judge = judgeV58; } catch (e) {}
   }
 
+  document.addEventListener('pointerdown', rememberActionDownV58, true);
   document.addEventListener('pointerup', interceptActionV58, true);
   document.addEventListener('click', interceptActionV58, true);
 
@@ -26001,16 +26101,65 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
     return 'Проверь отчёт по скриншоту. Определи фактическое время, категорию нормы и рекомендуемое количество XP, но не выдавай XP самостоятельно. Ответь только JSON.';
   }
   function fileToDataURL(file){ return new Promise(function(resolve, reject){ var reader = new FileReader(); reader.onload=function(){ resolve(String(reader.result || '')); }; reader.onerror=function(){ reject(reader.error || new Error('Не удалось прочитать файл.')); }; reader.readAsDataURL(file); }); }
-  function loadImage(dataUrl){ return new Promise(function(resolve, reject){ var img = new Image(); img.onload=function(){ resolve(img); }; img.onerror=function(){ reject(new Error('Не удалось открыть изображение.')); }; img.src=dataUrl; }); }
+  function loadImage(dataUrl){ return new Promise(function(resolve, reject){ var img = new Image(); img.onload=function(){ resolve(img); }; img.onerror=function(){ reject(new Error('Файл не удалось открыть как изображение. Используйте JPG, PNG или WebP.')); }; img.src=dataUrl; }); }
+  function imageExt(file){
+    var name = String(file && file.name || '').toLowerCase();
+    if (/\.png$/.test(name)) return 'png';
+    if (/\.webp$/.test(name)) return 'webp';
+    if (/\.jpe?g$/.test(name)) return 'jpg';
+    var type = String(file && file.type || '').toLowerCase();
+    if (type.indexOf('png') !== -1) return 'png';
+    if (type.indexOf('webp') !== -1) return 'webp';
+    return 'jpg';
+  }
+  function isImageFile(file){
+    var type = String(file && file.type || '').toLowerCase();
+    var name = String(file && file.name || '').toLowerCase();
+    return /^image\//.test(type) || /\.(png|jpe?g|webp)$/i.test(name);
+  }
+  function dataUrlToBlob(dataUrl){
+    var parts = String(dataUrl || '').split(',');
+    var meta = parts[0] || '', raw = atob(parts[1] || '');
+    var mime = (meta.match(/data:([^;]+)/) || [,'image/jpeg'])[1];
+    var arr = new Uint8Array(raw.length);
+    for (var i=0;i<raw.length;i++) arr[i] = raw.charCodeAt(i);
+    return new Blob([arr], { type:mime });
+  }
+  async function uploadProof(c, file, dataUrl, u){
+    if (!c || !c.storage || !dataUrl) return { url:'', source:'embedded', error:'storage_unavailable' };
+    var buckets = ['report-screenshots','reports','screenshots','report-proofs'];
+    var blob = dataUrlToBlob(dataUrl);
+    var ext = imageExt(file);
+    var owner = String((u && (u.id || u.email)) || 'user').replace(/[^a-zA-Z0-9_.@-]+/g, '_').slice(0,80);
+    var path = 'reports/' + owner + '/' + Date.now() + '_' + Math.random().toString(16).slice(2) + '.' + ext;
+    var last = '';
+    for (var i=0;i<buckets.length;i++) {
+      try {
+        var bucket = buckets[i];
+        var up = await c.storage.from(bucket).upload(path, blob, { cacheControl:'3600', upsert:true, contentType:blob.type || 'image/jpeg' });
+        if (!up.error) {
+          var pub = c.storage.from(bucket).getPublicUrl(path);
+          var url = pub && pub.data && pub.data.publicUrl ? pub.data.publicUrl : '';
+          if (!url && c.storage.from(bucket).createSignedUrl) {
+            try { var sig = await c.storage.from(bucket).createSignedUrl(path, 60 * 60 * 24 * 30); url = sig && sig.data && sig.data.signedUrl || ''; } catch(e2) {}
+          }
+          return { url:url, bucket:bucket, path:path, source:'storage' };
+        }
+        last = up.error && (up.error.message || up.error.name) || String(up.error || '');
+      } catch(e) { last = e && e.message ? e.message : String(e); }
+    }
+    return { url:'', source:'embedded', error:last || 'storage_failed' };
+  }
   async function compressImage(file){
     var raw = await fileToDataURL(file);
     var img = await loadImage(raw);
-    var width = img.naturalWidth || img.width, height = img.naturalHeight || img.height, maxSide = /iPhone|Android|Mobile/i.test(navigator.userAgent) ? 1100 : 1400;
+    var width = img.naturalWidth || img.width, height = img.naturalHeight || img.height, maxSide = /iPhone|Android|Mobile/i.test(navigator.userAgent) ? 1000 : 1200;
     var canvas = document.createElement('canvas');
     function draw(side, quality){ var ratio = Math.min(1, side / Math.max(width, height)); canvas.width = Math.max(1, Math.round(width * ratio)); canvas.height = Math.max(1, Math.round(height * ratio)); var ctx = canvas.getContext('2d', { alpha:false }); ctx.fillStyle='#111'; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.drawImage(img,0,0,canvas.width,canvas.height); return canvas.toDataURL('image/jpeg', quality); }
-    var out = draw(maxSide, .72);
-    while(out.length > 900000 && maxSide > 760){ maxSide -= 160; out = draw(maxSide, .58); }
-    while(out.length > 900000 && maxSide > 560){ maxSide -= 120; out = draw(maxSide, .46); }
+    var quality = .70, out = draw(maxSide, quality);
+    while(out.length > 520000 && quality > .42){ quality -= .07; out = draw(maxSide, quality); }
+    while(out.length > 520000 && maxSide > 620){ maxSide -= 140; out = draw(maxSide, .44); }
+    if (out.length > 700000) throw new Error('Изображение слишком большое после сжатия. Обрежьте скриншот или отправьте JPG/PNG меньшего размера.');
     return out;
   }
   function parseJson(text){
@@ -26076,6 +26225,23 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
     if (!reportFiles.length) { box.innerHTML = '<div class="ch89-stable-report-help">Скриншот для AI проверки ещё не выбран.</div>'; return; }
     box.innerHTML = reportFiles.map(function(file, i){ var url = URL.createObjectURL(file); return '<div class="ch89-stable-file-card"><button class="ch89-stable-file-remove" type="button" data-ch89-remove-file="'+i+'">×</button><img src="'+url+'" alt="Скриншот" onload="try{URL.revokeObjectURL(this.src)}catch(e){}"><span>'+esc(file.name || ('screen_'+(i+1)))+'</span></div>'; }).join('');
   }
+  async function insertReportRow(c, row, payload){
+    var first = await c.from('reports').insert([row]);
+    if (!first.error) return first;
+    var firstMsg = first.error && (first.error.message || first.error.details || first.error.hint) || String(first.error || '');
+    // Если база отказалась принимать длинный data:image, сохраняем сам отчёт без тяжёлого вложения.
+    if (/^data:image/i.test(String(row.link || ''))) {
+      payload.proofNote = 'Скриншот прошёл AI-проверку, но база не приняла тяжёлое вложение. Оригинал нужно смотреть по дополнительной ссылке, если она указана.';
+      payload.proofUrl = '';
+      if (payload.proof) payload.proof.url = '';
+      var retry = { id:row.id, email:row.email, link:String(payload.linkText || ''), date:JSON.stringify(payload), status:row.status, xp:row.xp };
+      var second = await c.from('reports').insert([retry]);
+      if (!second.error) { second.warning = 'Скриншот не вложен в базу из-за ограничения размера: ' + firstMsg; return second; }
+      throw second.error;
+    }
+    throw first.error;
+  }
+
   async function submitReport(){
     if (busy) return false;
     var c = client(), u = await authUser(), btn = $('ch89StableSubmitReportBtn');
@@ -26088,17 +26254,24 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
     if (!u || !u.email) { setResult('Сначала войдите в аккаунт.', false); return false; }
     if (!c) { setResult('База ещё не загрузилась. Обновите страницу и попробуйте ещё раз.', false); return false; }
     if (!nick || !date || !claimed) { setResult('Заполните ник, дату и заявленное время работы.', false); return false; }
-    if (!reportFiles.length) { setResult('Загрузите скриншот для AI проверки. Ссылка может быть дополнением, но не заменяет скриншот.', false); return false; }
+    if (!reportFiles.length) { setResult('Выберите скриншот JPG, PNG или WebP. Ссылка может быть дополнением, но не заменяет скриншот.', false); return false; }
     busy = true; var oldText = btn && btn.textContent; if (btn) { btn.disabled = true; btn.textContent = 'Проверяю и передаю руководству...'; }
-    logReset(); logLine('📎','Скриншот принят. Подготавливаю изображение.','ok'); setResult('AI проверяет отчёт. XP не будет начислен автоматически...', true);
+    logReset(); logLine('📎','Скриншот принят. Сжимаю изображение перед отправкой.','ok'); setResult('AI проверяет отчёт. XP не будет начислен автоматически...', true);
     try {
       var screenshot = await compressImage(reportFiles[0]);
       logLine('🔎','Отправляю скриншот на AI проверку.','warn');
       var verdict = await callAiJudge(screenshot, claimed, { nick:nick, date:date, work:work });
       logLine('🧠','AI вердикт: ' + verdict.category + ', рекомендация ' + verdict.xp + ' XP.','ok');
-      var payload = { version:'ch89_stable_ai_review_v1', nick:nick, nickname:nick, work:work, comment:work, date:date, day:date, declaredTime:claimed, requestedTime:claimed, requestedStatus:quality || verdict.category, quality:quality || '', ai:verdict, aiStatus:verdict.status, verifiedTime:verdict.verifiedTime, category:verdict.category, recommendedXp:verdict.xp, reason:verdict.reason, proofName:reportFiles[0].name || 'report_screenshot.jpg', linkText:link, userId:u.id, email:u.email, createdAt:new Date().toISOString(), finalStatus:'У Руководства' };
-      var ins = await c.from('reports').insert([{ id:'rep_ai_review_' + Date.now() + '_' + Math.random().toString(16).slice(2), email:u.email, link:screenshot, date:JSON.stringify(payload), status:'У Руководства', xp:0 }]);
-      if (ins.error) throw ins.error;
+      logLine('☁️','Сохраняю фото отчёта.','warn');
+      var proof = await uploadProof(c, reportFiles[0], screenshot, u);
+      var proofUrl = proof && proof.url ? proof.url : '';
+      if (proofUrl) logLine('📎','Фото прикреплено к отчёту через хранилище.','ok');
+      else logLine('⚠️','Хранилище фото недоступно, пробую сохранить сжатый скриншот прямо в отчёт.','warn');
+      var payload = { version:'ch89_stable_ai_review_v2_photo_fix', nick:nick, nickname:nick, work:work, comment:work, date:date, day:date, declaredTime:claimed, requestedTime:claimed, requestedStatus:quality || verdict.category, quality:quality || '', ai:verdict, aiStatus:verdict.status, verifiedTime:verdict.verifiedTime, category:verdict.category, recommendedXp:verdict.xp, reason:verdict.reason, proofName:reportFiles[0].name || 'report_screenshot.jpg', proofUrl:proofUrl, proof:proof || null, linkText:link, userId:u.id, email:u.email, createdAt:new Date().toISOString(), finalStatus:'У Руководства' };
+      var rowId = 'rep_ai_review_' + Date.now() + '_' + Math.random().toString(16).slice(2);
+      var dbLink = proofUrl || screenshot;
+      var ins = await insertReportRow(c, { id:rowId, email:u.email, link:dbLink, date:JSON.stringify(payload), status:'У Руководства', xp:0 }, payload);
+      if (ins.warning) logLine('⚠️', ins.warning, 'warn');
       logLine('💾','Отчёт сохранён со статусом «У Руководства». XP: 0.','ok');
       setResult('', true, resultHtml(verdict));
       reportFiles = []; renderPreview();
@@ -26107,7 +26280,7 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
       try { if (typeof playSound === 'function') playSound('win'); } catch(e) {}
     } catch(err) {
       logLine('⛔', err && err.message ? err.message : err, 'bad');
-      setResult('Ошибка проверки: ' + (err && err.message ? err.message : err), false);
+      setResult('Ошибка отправки отчёта: ' + (err && err.message ? err.message : err), false);
     } finally {
       busy = false;
       if (btn) { btn.disabled = false; btn.textContent = oldText || 'Проверить AI и отправить руководству'; }
@@ -26138,10 +26311,14 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
   }
   function pendingStatus(status){ status = String(status || ''); return status === 'У Руководства' || status === 'На проверке' || status.indexOf('Ожидает') === 0; }
   function proofHtml(row, payload){
-    var link = String(row.link || payload.link || '');
+    payload = payload || {};
+    var stored = payload.proof && payload.proof.url ? payload.proof.url : '';
+    var link = String(row.link || payload.proofUrl || stored || payload.link || '');
     var html = '';
-    if (link && link.indexOf('data:image') === 0) html += '<div class="ch89-stable-proof"><img src="'+link+'" alt="Доказательство" data-ch89-zoom="1"></div>';
+    if (link && /^data:image/i.test(link)) html += '<div class="ch89-stable-proof"><img src="'+link+'" alt="Доказательство" data-ch89-zoom="1"></div>';
+    else if (link && /\.(png|jpe?g|webp)(?:\?|#|$)/i.test(link)) html += '<div class="ch89-stable-proof"><img src="'+esc(link)+'" alt="Доказательство" data-ch89-zoom="1"></div><a class="btn btn-secondary" href="'+esc(link)+'" target="_blank" rel="noreferrer">📎 Открыть фото</a>';
     else if (link) html += '<a class="btn btn-secondary" href="'+esc(link)+'" target="_blank" rel="noreferrer">📎 Открыть доказательство</a>';
+    if (payload.proofNote) html += '<div class="ch89-stable-muted">'+esc(payload.proofNote)+'</div>';
     if (payload.linkText) html += '<a class="btn btn-secondary" href="'+esc(payload.linkText)+'" target="_blank" rel="noreferrer">🔗 Дополнительная ссылка</a>';
     return html || '<span class="ch89-stable-pill">Без вложения</span>';
   }
@@ -26224,7 +26401,7 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
       }
       if (!$('ch89StableReportBox')) {
         var place = ($('reportLinkInput') && $('reportLinkInput').closest && $('reportLinkInput').closest('.admin-field')) || $('reportClaimedTimeField') || form;
-        place.insertAdjacentHTML('afterend','<div id="ch89StableReportBox"><div class="ch89-stable-report-title"><span>AI проверка без автозачёта</span><span class="ch89-stable-pill pending">У Руководства</span></div><div class="ch89-stable-report-help">AI проверяет скриншот и пишет рекомендацию. XP не начисляется автоматически. Руководство отдельно нажимает «Выдать ХП» или «Отказать».</div><div class="admin-field"><label>Скриншот для проверки:</label><input id="ch89StableReportFileInput" class="support-input" type="file" accept="image/*,.png,.jpg,.jpeg,.webp"><div id="ch89StableReportPreview"></div></div><button id="ch89StableSubmitReportBtn" type="button">Проверить AI и отправить руководству</button><div id="ch89StableReportLog"></div></div>');
+        place.insertAdjacentHTML('afterend','<div id="ch89StableReportBox"><div class="ch89-stable-report-title"><span>AI проверка без автозачёта</span><span class="ch89-stable-pill pending">У Руководства</span></div><div class="ch89-stable-report-help">AI проверяет скриншот и пишет рекомендацию. Отправка теперь сохраняет отчёт даже если хранилище фото временно недоступно. XP не начисляется автоматически.</div><div class="admin-field"><label>Скриншот для проверки:</label><input id="ch89StableReportFileInput" class="support-input" type="file" accept="image/*,.png,.jpg,.jpeg,.webp"><div id="ch89StableReportPreview"></div></div><button id="ch89StableSubmitReportBtn" type="button">Проверить AI и отправить руководству</button><div id="ch89StableReportLog"></div></div>');
       }
       renderPreview();
     }
@@ -26238,7 +26415,12 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
     if (review) review.style.display = isLeaderFast() ? 'inline-flex' : 'none';
   }
   document.addEventListener('change', function(e){
-    if (e.target && e.target.id === 'ch89StableReportFileInput') { reportFiles = Array.prototype.slice.call(e.target.files || []).filter(function(f){ return /^image\//i.test(String(f.type || '')); }).slice(0,1); e.target.value=''; renderPreview(); }
+    if (e.target && e.target.id === 'ch89StableReportFileInput') {
+      reportFiles = Array.prototype.slice.call(e.target.files || []).filter(isImageFile).slice(0,1);
+      e.target.value='';
+      if (!reportFiles.length) setResult('Выберите изображение JPG, PNG или WebP. HEIC/неизвестный формат браузер не сможет проверить.', false);
+      renderPreview();
+    }
   }, true);
   document.addEventListener('click', function(e){
     var remove = e.target && e.target.closest && e.target.closest('[data-ch89-remove-file]');
@@ -26269,6 +26451,7 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
   try { new MutationObserver(function(){ clearTimeout(window.__CH89_STABLE_REPORT_BOOT__); window.__CH89_STABLE_REPORT_BOOT__ = setTimeout(boot, 180); }).observe(document.documentElement, { childList:true, subtree:true }); } catch(e) {}
 })();
 </script>
+<!-- patched: photo upload/save fallback v2, 2026-06-09 -->
 <!-- === /CH89 STABLE REPORT REVIEW === -->
 
 
@@ -29768,6 +29951,7 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
 })();
 </script>
 <!-- === /CH89 V173 === -->
+
 
 </body>
 </html>
