@@ -26025,7 +26025,7 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
 (function(){
   'use strict';
   if (window.__CH89_STABLE_REPORT_REVIEW__) return;
-  window.__CH89_STABLE_REPORT_REVIEW__ = true;
+  window.__CH89_STABLE_REPORT_REVIEW__ = 'v176-vision-compat';
 
   var SETTINGS_EMAIL = 'SITE_SETTINGS';
   var REPORTS_KEY = 'ch89_ai_reports_config_v171';
@@ -26214,14 +26214,35 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
     return String(dataUrl || '').replace(/^data:[^,]+,/i, '');
   }
   function looksGemini(cfg){
-    var ep = String(cfg && cfg.endpoint || '').toLowerCase();
+    var rawEp = String(cfg && cfg.endpoint || '').trim();
+    var ep = rawEp.toLowerCase();
     var model = String(cfg && cfg.model || '').toLowerCase();
-    return ep.indexOf('generativelanguage.googleapis.com') !== -1 || ep.indexOf('googleapis.com') !== -1 || model.indexOf('gemini') !== -1;
+    // Gemini вызываем напрямую только если указан Google endpoint. Если модель Gemini стоит через
+    // OpenRouter/OpenAI-compatible endpoint, отправляем как обычный chat/completions с image_url.
+    return ep.indexOf('generativelanguage.googleapis.com') !== -1 || ep.indexOf('googleapis.com') !== -1 || ((!rawEp || ep === DEFAULT_ENDPOINT) && model.indexOf('gemini') !== -1);
   }
   function looksTextOnlyDeepseek(cfg){
     var ep = String(cfg && cfg.endpoint || '').toLowerCase();
     var model = String(cfg && cfg.model || '').toLowerCase();
-    return ep.indexOf('deepseek.com') !== -1 || /^deepseek/i.test(model);
+    return ep.indexOf('api.deepseek.com') !== -1 || /^deepseek/i.test(model);
+  }
+  function looksResponsesApi(cfg){
+    return /\/responses(?:\?|$)/i.test(String(cfg && cfg.endpoint || ''));
+  }
+  function openAiLikeText(data){
+    if (!data) return '';
+    if (typeof data.output_text === 'string') return data.output_text;
+    var choice = data.choices && data.choices[0];
+    if (choice && choice.message) return choice.message.content || choice.message.reasoning_content || '';
+    var chunks = [];
+    (data.output || []).forEach(function(item){
+      (item.content || []).forEach(function(part){
+        if (part && typeof part.text === 'string') chunks.push(part.text);
+        if (part && part.type === 'output_text' && typeof part.text === 'string') chunks.push(part.text);
+      });
+    });
+    return chunks.join('
+').trim();
   }
   function geminiEndpoint(cfg){
     var model = String((cfg && cfg.model) || 'gemini-1.5-flash').trim() || 'gemini-1.5-flash';
@@ -26252,23 +26273,58 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
     return sanitizeAi(parseJson(text));
   }
   async function callOpenAiVisionJudge(cfg, dataUrl, system, userText){
-    var payload = {
-      model:cfg.model,
-      messages:[
-        { role:'system', content:system },
-        { role:'user', content:[{ type:'text', text:userText }, { type:'image_url', image_url:{ url:dataUrl, detail:'high' } }] }
-      ],
-      temperature:.05,
-      max_tokens:700,
-      stream:false,
-      response_format:{ type:'json_object' }
-    };
-    var response = await fetch(cfg.endpoint, { method:'POST', headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer ' + cfg.apiKey }, body:JSON.stringify(payload) });
-    var data = await response.json().catch(function(){ return null; });
-    if (!response.ok) { var msg = data && data.error && (data.error.message || data.error) ? (data.error.message || data.error) : ('HTTP ' + response.status); throw new Error('Ошибка AI проверки: ' + scrub(msg)); }
-    var choice = data && data.choices && data.choices[0];
-    var text = choice && choice.message && (choice.message.content || choice.message.reasoning_content);
-    return sanitizeAi(parseJson(text));
+    var endpoint = String(cfg.endpoint || DEFAULT_ENDPOINT).trim() || DEFAULT_ENDPOINT;
+    var payload;
+    if (looksResponsesApi(cfg)) {
+      payload = {
+        model:cfg.model,
+        input:[
+          { role:'system', content:[{ type:'input_text', text:system }] },
+          { role:'user', content:[{ type:'input_text', text:userText }, { type:'input_image', image_url:dataUrl, detail:'high' }] }
+        ],
+        temperature:.05,
+        max_output_tokens:700
+      };
+    } else {
+      payload = {
+        model:cfg.model,
+        messages:[
+          { role:'system', content:system },
+          { role:'user', content:[{ type:'text', text:userText }, { type:'image_url', image_url:{ url:dataUrl, detail:'high' } }] }
+        ],
+        temperature:.05,
+        max_tokens:700,
+        stream:false,
+        response_format:{ type:'json_object' }
+      };
+    }
+    async function send(body){
+      var response = await fetch(endpoint, { method:'POST', headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer ' + cfg.apiKey }, body:JSON.stringify(body) });
+      var data = await response.json().catch(function(){ return null; });
+      if (!response.ok) {
+        var msg = data && data.error && (data.error.message || data.error) ? (data.error.message || data.error) : ('HTTP ' + response.status);
+        var error = new Error('Ошибка AI проверки: ' + scrub(msg));
+        error.rawMessage = String(msg || '');
+        error.status = response.status;
+        throw error;
+      }
+      return data;
+    }
+    var data;
+    try {
+      data = await send(payload);
+    } catch(err) {
+      var raw = String((err && err.rawMessage) || (err && err.message) || '');
+      // Некоторые совместимые сервисы принимают картинку, но не принимают response_format.
+      // В таком случае повторяем тот же запрос без принудительного JSON-режима.
+      if (!looksResponsesApi(cfg) && payload.response_format && /response[_-]?format|json_object|json schema/i.test(raw)) {
+        delete payload.response_format;
+        data = await send(payload);
+      } else {
+        throw err;
+      }
+    }
+    return sanitizeAi(parseJson(openAiLikeText(data)));
   }
   async function callAiJudge(dataUrl, declaredTime, meta){
     var cfg = await getConfig();
@@ -26277,15 +26333,17 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
     var system = 'Ты проверяешь отчёты модераторов. Нельзя выдавать XP и нельзя финально принимать отчёт: ты только даёшь рекомендацию для руководства. Отвечай строго JSON без markdown: {"status":"Одобрено или Отклонено","verifiedTime":"найденное время","category":"Норма или Перенорма или Герой дня или Натяг или Не выполнено","xp":15,"reason":"короткая причина"}. Инструкция проверки: ' + instruction;
     var userText = 'Проверь отчёт по скриншоту. Заявленное время: ' + declaredTime + '\nНик: ' + (meta.nick || '') + '\nДата: ' + (meta.date || '') + '\nКомментарий: ' + (meta.work || '') + '\nВерни только JSON.';
     if (looksGemini(cfg)) return callGeminiJudge(cfg, dataUrl, system, userText);
-    if (looksTextOnlyDeepseek(cfg)) {
-      throw new Error('API отчётов сейчас настроен на текстовый сервис и не принимает изображения. Укажите для отчётов API с поддержкой картинок: Gemini или OpenAI/OpenRouter vision-модель. Без чтения скриншота отчёт не отправляется.');
-    }
     try {
+      // Не блокируем DeepSeek/OpenRouter/другие совместимые endpoint заранее по названию модели.
+      // Отправляем картинку и доверяем ответу самого API: если endpoint умеет vision, отчёт проверится.
       return await callOpenAiVisionJudge(cfg, dataUrl, system, userText);
     } catch(err) {
       var msg = err && err.message ? String(err.message) : String(err || '');
-      if (/unknown variant [`']?image_url|expected [`']?text|image_url/i.test(msg)) {
-        throw new Error('Текущий API отчётов отклонил изображение и принимает только текст. Поставьте vision-модель/API для проверки отчётов; текстовые модели скриншот не видят.');
+      if (/unknown variant [`']?image_url|expected [`']?text|image_url|image.*not.*support|does not support.*image|multimodal|vision|content.*string/i.test(msg)) {
+        if (looksTextOnlyDeepseek(cfg)) {
+          throw new Error('Указанный API отклонил изображение. Официальный DeepSeek chat/completions обычно текстовый; для отчётов нужен OpenAI-compatible endpoint с vision-моделью либо прокси, который реально принимает image_url. Если вы используете OpenRouter/другой совместимый endpoint, выберите модель с поддержкой картинок.');
+        }
+        throw new Error('Указанный API отклонил изображение. Для проверки отчётов нужна модель/endpoint с поддержкой image_url или input_image.');
       }
       throw err;
     }
