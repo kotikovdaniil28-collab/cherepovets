@@ -25767,7 +25767,7 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
   }
 
   #ch89StableReportBox {
-    display: grid;
+    display: grid !important;
     gap: .85rem;
     margin-top: 1rem;
     padding: 1rem;
@@ -25832,7 +25832,7 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
     cursor: pointer;
   }
   .ch89-stable-upload-field {
-    display: grid;
+    display: grid !important;
     gap: .6rem;
   }
   #ch89StableReportFileInput {
@@ -25843,12 +25843,17 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
     pointer-events: none !important;
   }
   #ch89StablePickFileBtn {
-    display: inline-flex;
+    display: inline-flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    position: relative !important;
+    z-index: 20 !important;
     width: 100%;
     justify-content: center;
     align-items: center;
     gap: .55rem;
-    min-height: 46px;
+    min-height: 52px;
     border-radius: 16px;
     border: 1px solid rgba(82,199,123,.58);
     background: linear-gradient(135deg, #52c77b, #8fe0a8);
@@ -26492,7 +26497,24 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
       }
       if (!$('ch89StableReportBox')) {
         var place = ($('reportLinkInput') && $('reportLinkInput').closest && $('reportLinkInput').closest('.admin-field')) || $('reportClaimedTimeField') || form;
-        place.insertAdjacentHTML('afterend','<div id="ch89StableReportBox"><div class="ch89-stable-report-title"><span>AI проверка без автозачёта</span><span class="ch89-stable-pill pending">У Руководства</span></div><div class="ch89-stable-report-help">AI проверяет скриншот и пишет рекомендацию. Ссылка может быть дополнением, но скриншот выбирается здесь.</div><div class="admin-field ch89-stable-upload-field"><label>Скриншот для проверки:</label><input id="ch89StableReportFileInput" class="support-input" type="file" accept="image/*,.png,.jpg,.jpeg,.webp"><button id="ch89StablePickFileBtn" type="button">📎 Загрузить фото напрямую</button><div id="ch89StablePhotoCount">Фото не выбрано</div><div id="ch89StableReportPreview"></div></div><button id="ch89StableSubmitReportBtn" type="button">Проверить AI и отправить руководству</button><div id="ch89StableReportLog"></div></div>');
+        place.insertAdjacentHTML('afterend','<div id="ch89StableReportBox"><div class="ch89-stable-report-title"><span>AI проверка без автозачёта</span><span class="ch89-stable-pill pending">У Руководства</span></div><div class="ch89-stable-report-help">AI проверяет скриншот и пишет рекомендацию. Ссылка может быть дополнением, но скриншот выбирается здесь.</div><div class="admin-field ch89-stable-upload-field" id="ch89StableUploadField"><label>Скриншот для проверки:</label><input id="ch89StableReportFileInput" class="support-input" type="file" accept="image/*,.png,.jpg,.jpeg,.webp"><button id="ch89StablePickFileBtn" type="button">📎 Загрузить фото напрямую</button><div id="ch89StablePhotoCount">Фото не выбрано</div><div id="ch89StableReportPreview"></div></div><button id="ch89StableSubmitReportBtn" type="button">Проверить AI и отправить руководству</button><div id="ch89StableReportLog"></div></div>');
+      } else if (!$('ch89StablePickFileBtn') || !$('ch89StableReportFileInput')) {
+        var box = $('ch89StableReportBox');
+        if (box) box.insertAdjacentHTML('afterbegin','<div class="admin-field ch89-stable-upload-field" id="ch89StableUploadField"><label>Скриншот для проверки:</label><input id="ch89StableReportFileInput" class="support-input" type="file" accept="image/*,.png,.jpg,.jpeg,.webp"><button id="ch89StablePickFileBtn" type="button">📎 Загрузить фото напрямую</button><div id="ch89StablePhotoCount">Фото не выбрано</div><div id="ch89StableReportPreview"></div></div>');
+      }
+      var pickBtn = $('ch89StablePickFileBtn');
+      if (pickBtn) {
+        pickBtn.type = 'button';
+        pickBtn.textContent = '📎 Загрузить фото напрямую';
+        pickBtn.style.setProperty('display','inline-flex','important');
+        pickBtn.style.setProperty('visibility','visible','important');
+        pickBtn.style.setProperty('opacity','1','important');
+        pickBtn.style.setProperty('pointer-events','auto','important');
+      }
+      var stableInput = $('ch89StableReportFileInput');
+      if (stableInput) {
+        stableInput.setAttribute('accept','image/*,.png,.jpg,.jpeg,.webp');
+        stableInput.removeAttribute('disabled');
       }
       renderPreview();
     }
@@ -30055,7 +30077,7 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
 
 
 
-<!-- === CH89 V174: repaired report/table access + vision-safe report API === -->
+<!-- === CH89 V175: repaired report/table access + visible direct photo upload === -->
 <style id="ch89-v174-report-access-fix-style">
   body:not(.ch89-report-mod-access) #reportTabBtn,
   body:not(.ch89-report-mod-access) #mode-report,
