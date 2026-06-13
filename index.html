@@ -30463,10 +30463,10 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
   function normalizeType(type,detail){ var s=lower(type+' '+detail); if(/смен|ник|nickname|nick/.test(s))return'Смена ника'; if(/наказ|мут|mute|бан|ban|warn|пред|kick|кик|jail|деморган|блок|blacklist|чс/.test(s))return'Наказание'; return''; }
   function sanitize(raw){
     raw=raw||{}; var arrItems=Array.isArray(raw.items)?raw.items:Array.isArray(raw.actions)?raw.actions:[]; var items=[];
-    arrItems.forEach(function(it){ if(typeof it==='string')it={details:it}; it=it||{}; var details=String(it.details||it.text||it.description||it.reason||'').trim(), rawText=lower((it.type||it.kind||'')+' '+details); if(/должност|роль|удален[^ ]* сообщ|удалени[^ ]* сообщ|message delete/.test(rawText))return; var type=normalizeType(it.type||it.kind||'',details), uniq=type+'|'+lower(details); if(type&&!items.some(function(x){return x.__uniq===uniq;}))items.push({type:type,details:details||type,__uniq:uniq}); });
+    arrItems.forEach(function(it){ if(typeof it==='string')it={details:it}; it=it||{}; var details=String(it.details||it.text||it.description||it.reason||'').trim(), type=normalizeType(it.type||it.kind||'',details); if(type)items.push({type:type,details:details||type}); });
     var count=items.length; if(!count&&!Array.isArray(raw.items)&&!Array.isArray(raw.actions)){ count=Math.max(0,Math.min(100,parseInt(raw.validActions||raw.count||0,10)||0)); }
     var ignored=Array.isArray(raw.ignored)?raw.ignored:Array.isArray(raw.rejected)?raw.rejected:[];
-    items.forEach(function(x){delete x.__uniq;}); return { validActions:count, xp:count*10, items:items, ignored:ignored.map(function(x){return String(typeof x==='string'?x:(x&&x.details)||JSON.stringify(x));}).slice(0,20), reason:String(raw.reason||raw.summary||'AI применил строгую фильтрацию: засчитаны только наказания и смены ников.').trim(), confidence:String(raw.confidence||'').trim() };
+    return { validActions:count, xp:count*10, items:items, ignored:ignored.map(function(x){return String(typeof x==='string'?x:(x&&x.details)||JSON.stringify(x));}).slice(0,20), reason:String(raw.reason||raw.summary||'AI применил строгую фильтрацию: засчитаны только наказания и смены ников.').trim(), confidence:String(raw.confidence||'').trim() };
   }
   async function actionInstruction(){ var base=''; try{ if(window.CH89_V172_REPORT_INSTRUCTION&&typeof window.CH89_V172_REPORT_INSTRUCTION.load==='function')base=String(await window.CH89_V172_REPORT_INSTRUCTION.load()||''); }catch(e){} return base+'\n\nОТДЕЛЬНАЯ СТРОГАЯ ПРОВЕРКА ДЕЙСТВИЙ МОДЕРАТОРА. На скриншоте находятся карточки логов Discord. Засчитывай только: (1) выданные наказания пользователям; (2) смену ника пользователя. Не засчитывай: назначения или снятия должностей, удаление сообщений, обычные сообщения, дубликаты, обрезанные и непонятные записи. Не додумывай скрытые действия. Каждая отдельная видимая карточка может дать максимум одно действие. Верни только JSON: {"validActions": число, "items":[{"type":"Наказание или Смена ника","details":"краткое описание видимой карточки"}],"ignored":["что отброшено и почему"],"reason":"краткий итог","confidence":"high|medium|low"}.'; }
   async function judge(dataUrl){
@@ -30490,15 +30490,15 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
   function proof(payload){ return String(payload&&payload.proofUrl||payload&&payload.proof&&payload.proof.url||''); }
   function statusClass(status){ status=String(status||''); if(status==='У Руководства')return'pending'; if(status==='Засчитано')return'ok'; if(status==='Не засчитано'||status==='Отказано')return'bad'; return''; }
   function imgHtml(url){ if(!url)return'<div class="ch89-action-help">Скриншот не сохранён.</div>'; if(/^data:image/i.test(url)||/\.(png|jpe?g|webp)(?:\?|#|$)/i.test(url))return'<img class="ch89-action-proof" src="'+esc(url)+'" alt="Скриншот действий" data-ch89-action-zoom="1">'; return'<a class="btn btn-secondary" href="'+esc(url)+'" target="_blank" rel="noreferrer">📎 Открыть доказательство</a>'; }
-  function itemsHtml(p){ var items=p.actionAi&&Array.isArray(p.actionAi.items)?p.actionAi.items:[]; if(!items.length)return'<div class="ch89-action-help">AI не нашёл подтверждённых действий.</div>'; return'<div class="ch89-action-items">'+items.map(function(it,i){return'<div class="ch89-action-item"><b>'+(i+1)+'. '+esc(it.type||'Действие')+'</b><br>'+esc(it.details||'')+'</div>';}).join('')+'</div>'; }
-  function mineRow(row){ var p=parsePayload(row), a=p.actionAi||{}, count=Number(p.finalCount!=null?p.finalCount:a.validActions||0), xp=Number(p.finalXp!=null?p.finalXp:count*10), st=String(row.status||'У Руководства'); return'<div class="ch89-action-row"><div class="ch89-action-row-head"><div><b style="color:#fff">'+esc(p.actorNickname||'Модератор')+'</b><div class="ch89-action-help">'+esc(p.submittedAtRu||'')+'</div></div><span class="ch89-action-pill '+statusClass(st)+'">'+esc(st)+' · '+xp+' XP</span></div><div class="ch89-action-help">AI нашёл: <b>'+count+'</b> действ. × 10 XP</div>'+itemsHtml(p)+imgHtml(proof(p))+'</div>'; }
+  function itemsHtml(p){ var items=p.ai&&Array.isArray(p.ai.items)?p.ai.items:[]; if(!items.length)return'<div class="ch89-action-help">AI не нашёл подтверждённых действий.</div>'; return'<div class="ch89-action-items">'+items.map(function(it,i){return'<div class="ch89-action-item"><b>'+(i+1)+'. '+esc(it.type||'Действие')+'</b><br>'+esc(it.details||'')+'</div>';}).join('')+'</div>'; }
+  function mineRow(row){ var p=parsePayload(row), a=p.ai||{}, count=Number(p.finalCount!=null?p.finalCount:a.validActions||0), xp=Number(p.finalXp!=null?p.finalXp:count*10), st=String(row.status||'У Руководства'); return'<div class="ch89-action-row"><div class="ch89-action-row-head"><div><b style="color:#fff">'+esc(p.actorNickname||'Модератор')+'</b><div class="ch89-action-help">'+esc(p.submittedAtRu||'')+'</div></div><span class="ch89-action-pill '+statusClass(st)+'">'+esc(st)+' · '+xp+' XP</span></div><div class="ch89-action-help">AI нашёл: <b>'+count+'</b> действ. × 10 XP</div>'+itemsHtml(p)+imgHtml(proof(p))+'</div>'; }
   async function loadMine(){ var c=client(),u=await authUser(),list=$('ch89ActionMineList'); if(!list)return; if(!c||!u){list.innerHTML='<div class="ch89-action-help">Войдите в аккаунт.</div>';return;} list.innerHTML='<div class="ch89-action-help">Загружаю...</div>'; try{ var r=await c.from('reports').select('*').eq('email',SUBMISSION_EMAIL).eq('link',String(u.id||u.email||'')).order('id',{ascending:false}).limit(25); if(r.error)throw r.error; list.innerHTML=(r.data||[]).length?(r.data||[]).map(mineRow).join(''):'<div class="ch89-action-help">Сдач действий пока нет.</div>'; }catch(e){list.innerHTML='<div class="ch89-action-help" style="color:var(--color-error)">Ошибка загрузки: '+esc(e.message||e)+'</div>';} }
-  function reviewRow(row){ var p=parsePayload(row),a=p.actionAi||{},count=Number(a.validActions||0),xp=count*10, pending=String(row.status||'')==='У Руководства'; var actions=pending?'<div class="ch89-action-review-actions"><input class="ch89-action-count" type="number" min="0" max="100" step="1" value="'+count+'" data-action-count="'+esc(row.id)+'"><button class="btn btn-secondary" style="border-color:#52c77b;color:#7fe8a0" type="button" data-action-approve="'+esc(row.id)+'">Выдать '+xp+' XP</button><button class="btn btn-secondary" style="border-color:var(--color-error);color:var(--color-error)" type="button" data-action-reject="'+esc(row.id)+'">Отказать</button></div>':'<div class="ch89-action-help">Решение сохранено: '+esc(row.status||'')+' · '+Number(p.finalXp||0)+' XP.</div>'; return'<div class="ch89-action-row" data-action-review-card="'+esc(row.id)+'"><div class="ch89-action-row-head"><div><b style="color:#fff">'+esc(p.actorNickname||p.actorEmail||'Модератор')+'</b><div class="ch89-action-help">'+esc(p.actorEmail||'')+' · '+esc(p.submittedAtRu||'')+'</div></div><span class="ch89-action-pill '+statusClass(row.status)+'">'+esc(row.status||'')+'</span></div><div class="ch89-action-note">AI: <b>'+count+'</b> действий × 10 XP = <b>'+xp+' XP</b><br>'+esc(a.reason||'')+'</div>'+itemsHtml(p)+imgHtml(proof(p))+actions+'</div>'; }
+  function reviewRow(row){ var p=parsePayload(row),a=p.ai||{},count=Number(a.validActions||0),xp=count*10, pending=String(row.status||'')==='У Руководства'; var actions=pending?'<div class="ch89-action-review-actions"><input class="ch89-action-count" type="number" min="0" max="100" step="1" value="'+count+'" data-action-count="'+esc(row.id)+'"><button class="btn btn-secondary" style="border-color:#52c77b;color:#7fe8a0" type="button" data-action-approve="'+esc(row.id)+'">Выдать '+xp+' XP</button><button class="btn btn-secondary" style="border-color:var(--color-error);color:var(--color-error)" type="button" data-action-reject="'+esc(row.id)+'">Отказать</button></div>':'<div class="ch89-action-help">Решение сохранено: '+esc(row.status||'')+' · '+Number(p.finalXp||0)+' XP.</div>'; return'<div class="ch89-action-row" data-action-review-card="'+esc(row.id)+'"><div class="ch89-action-row-head"><div><b style="color:#fff">'+esc(p.actorNickname||p.actorEmail||'Модератор')+'</b><div class="ch89-action-help">'+esc(p.actorEmail||'')+' · '+esc(p.submittedAtRu||'')+'</div></div><span class="ch89-action-pill '+statusClass(row.status)+'">'+esc(row.status||'')+'</span></div><div class="ch89-action-note">AI: <b>'+count+'</b> действий × 10 XP = <b>'+xp+' XP</b><br>'+esc(a.reason||'')+'</div>'+itemsHtml(p)+imgHtml(proof(p))+actions+'</div>'; }
   async function loadReview(){ var roles=await refreshAccess(),list=$('ch89ActionReviewList'); if(!list)return; if(!roles.leader){list.innerHTML='<div class="ch89-action-help">Доступно только руководству.</div>';return;} var c=client(); if(!c)return; list.innerHTML='<div class="ch89-action-help">Загружаю очередь...</div>'; try{var r=await c.from('reports').select('*').eq('email',SUBMISSION_EMAIL).order('id',{ascending:false}).limit(100);if(r.error)throw r.error;var rows=r.data||[];rows.sort(function(a,b){return (a.status==='У Руководства'?0:1)-(b.status==='У Руководства'?0:1)||String(b.id).localeCompare(String(a.id));});list.innerHTML=rows.length?rows.map(reviewRow).join(''):'<div class="ch89-action-help">Очередь пустая.</div>'; }catch(e){list.innerHTML='<div class="ch89-action-help" style="color:var(--color-error)">Ошибка: '+esc(e.message||e)+'</div>';} }
   async function saveSubmission(){
     if(submitBusy)return; var c=client(),u=await authUser(),btn=$('ch89ActionSubmitBtn'), nick=String(($('ch89ActionNick')&&$('ch89ActionNick').value)||'').trim(), comment=String(($('ch89ActionComment')&&$('ch89ActionComment').value)||'').trim(); if(!c||!u)return setResult('Сначала войдите в аккаунт.',false); if(!nick)return setResult('Введите игровой ник.',false); if(!actionFile)return setResult('Загрузите скриншот логов модерации.',false);
     submitBusy=true; var old=btn&&btn.textContent; if(btn){btn.disabled=true;btn.textContent='AI проверяет скриншот...';} logReset(); setResult('Идёт строгая AI-проверка...',true);
-    try{ log('📎','Скриншот принят. Сжимаю изображение.','ok'); var data=await compress(actionFile); log('🧠','AI ищет только наказания и смены ников.','warn'); var verdict=await judge(data); log('✅','Найдено подтверждённых действий: '+verdict.validActions+'. Начисление после решения руководства: '+verdict.xp+' XP.','ok'); var uploaded=await uploadProof(c,actionFile,data,u); var payload={version:'ch89_actions_v179',actorUserId:String(u.id||u.user_id||''),actorEmail:String(u.email||''),actorNickname:nick,comment:comment,submittedAtRu:nowRu(),actionAi:verdict,proofUrl:uploaded.url||'',proof:uploaded,finalStatus:'У Руководства'}; var row={id:id('modaction'),email:SUBMISSION_EMAIL,link:String(u.id||u.email||''),status:'У Руководства',date:JSON.stringify(payload),xp:0}; var ins=await c.from('reports').insert([row]); if(ins.error)throw ins.error; setResult('Готово. AI насчитал '+verdict.validActions+' действий ('+verdict.xp+' XP). Сдача отправлена руководству.',true); clearPreview(); if($('ch89ActionComment'))$('ch89ActionComment').value=''; await loadMine(); if(fastLeader())await loadReview(); }
+    try{ log('📎','Скриншот принят. Сжимаю изображение.','ok'); var data=await compress(actionFile); log('🧠','AI ищет только наказания и смены ников.','warn'); var verdict=await judge(data); log('✅','Найдено подтверждённых действий: '+verdict.validActions+'. Начисление после решения руководства: '+verdict.xp+' XP.','ok'); var uploaded=await uploadProof(c,actionFile,data,u); var payload={version:'ch89_actions_v179',actorUserId:String(u.id||u.user_id||''),actorEmail:String(u.email||''),actorNickname:nick,comment:comment,submittedAtRu:nowRu(),ai:verdict,proofUrl:uploaded.url||'',proof:uploaded,finalStatus:'У Руководства'}; var row={id:id('modaction'),email:SUBMISSION_EMAIL,link:String(u.id||u.email||''),status:'У Руководства',date:JSON.stringify(payload),xp:0}; var ins=await c.from('reports').insert([row]); if(ins.error)throw ins.error; setResult('Готово. AI насчитал '+verdict.validActions+' действий ('+verdict.xp+' XP). Сдача отправлена руководству.',true); clearPreview(); if($('ch89ActionComment'))$('ch89ActionComment').value=''; await loadMine(); if(fastLeader())await loadReview(); }
     catch(e){log('⛔',String(e.message||e),'bad');setResult('Ошибка: '+String(e.message||e),false);} finally{submitBusy=false;if(btn){btn.disabled=false;btn.textContent=old||'Проверить AI и отправить';}}
   }
   async function decide(submissionId,approve){
@@ -30509,7 +30509,7 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
   function bindEvents(){
     document.addEventListener('click',function(e){
       var tab=e.target&&e.target.closest&&e.target.closest('#actionsTabBtn'); if(tab){e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();openActions();return false;}
-      var mode=e.target&&e.target.closest&&e.target.closest('.mode-btn[data-mode]'); if(mode&&mode.id!=='actionsTabBtn')closeActions(); var main=e.target&&e.target.closest&&e.target.closest('.main-cat-btn'); if(main)closeActions();
+      var mode=e.target&&e.target.closest&&e.target.closest('.mode-btn[data-mode]'); if(mode&&mode.id!=='actionsTabBtn')closeActions();
       var pick=e.target&&e.target.closest&&e.target.closest('#ch89ActionPickBtn'); if(pick){e.preventDefault();var input=$('ch89ActionFileInput');if(input)input.click();return;}
       if(e.target&&e.target.closest&&e.target.closest('#ch89ActionRemoveFile')){e.preventDefault();clearPreview();return;}
       if(e.target&&e.target.closest&&e.target.closest('#ch89ActionSubmitBtn')){e.preventDefault();saveSubmission();return;}
@@ -30551,6 +30551,171 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
 })();
 </script>
 <!-- === /CH89 V179 === -->
+
+
+
+<!-- === CH89 V180: группировка отчётности по датам + ссылка только как необязательное дополнение === -->
+<style id="ch89-v180-report-dates-optional-link-style">
+  #reportsListArea.ch89-stable-review-open > .ch89-v180-date-divider {
+    grid-column: 1 / -1 !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    width: 100%;
+    margin: .45rem 0 -.1rem;
+    padding: .72rem .9rem;
+    border-radius: 14px;
+    border: 1px solid rgba(255,191,71,.3);
+    background: linear-gradient(135deg, rgba(255,191,71,.14), rgba(255,255,255,.035));
+    color: #ffe4a8;
+    font-weight: 950;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+  }
+  .ch89-v180-date-divider small {
+    color: var(--color-text-muted);
+    font-size: .78rem;
+    font-weight: 850;
+    white-space: nowrap;
+  }
+  .ch89-v180-optional-badge {
+    display: inline-flex;
+    margin-left: .35rem;
+    padding: .16rem .42rem;
+    border-radius: 999px;
+    border: 1px solid rgba(127,232,160,.36);
+    background: rgba(127,232,160,.1);
+    color: #bfffd0;
+    font-size: .72rem;
+    font-weight: 900;
+    vertical-align: middle;
+  }
+  /* Старыми обработчиками больше нельзя случайно отправить отчёт и получить требование ссылки. */
+  #submitReportBtn,
+  #submitReportBtnV16,
+  #submitReportBtnV57,
+  #submitReportBtnV62,
+  #submitReportBtnV154,
+  #reportFileInput,
+  #reportFileInputV62,
+  #t73V131DirectUploadRow {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+</style>
+<script id="ch89-v180-report-dates-optional-link-script">
+(function(){
+  'use strict';
+  if (window.__CH89_V180_REPORT_DATES_OPTIONAL_LINK__) return;
+  window.__CH89_V180_REPORT_DATES_OPTIONAL_LINK__ = true;
+
+  function $(id){ return document.getElementById(id); }
+  function qsa(sel, root){ return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+  function esc(value){ return String(value == null ? '' : value).replace(/[&<>"']/g, function(ch){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]; }); }
+
+  function makeLinkOptional(){
+    var link = $('reportLinkInput');
+    if (!link) return;
+    link.removeAttribute('required');
+    link.setAttribute('aria-required','false');
+    /* type=text: необязательное поле не блокирует отправку встроенной HTML-проверкой URL. */
+    try { link.type = 'text'; } catch(e) {}
+    link.placeholder = 'Необязательно — оставьте пустым, если загрузили фото напрямую';
+    var field = link.closest && link.closest('.admin-field');
+    var label = field && field.querySelector('label');
+    if (label && label.dataset.ch89V180Optional !== '1') {
+      label.dataset.ch89V180Optional = '1';
+      label.innerHTML = 'Дополнительная ссылка на доказательства <span class="ch89-v180-optional-badge">необязательно</span>';
+    }
+  }
+
+  function hideLegacySenders(){
+    ['submitReportBtn','submitReportBtnV16','submitReportBtnV57','submitReportBtnV62','submitReportBtnV154','reportFileInput','reportFileInputV62','t73V131DirectUploadRow'].forEach(function(id){
+      var el = $(id); if (!el) return;
+      el.style.setProperty('display','none','important');
+      el.style.setProperty('visibility','hidden','important');
+      el.style.setProperty('pointer-events','none','important');
+    });
+  }
+
+  function extractIso(card){
+    var meta = card.querySelector('.ch89-stable-review-head .ch89-stable-muted') || card.querySelector('.ch89-stable-muted');
+    var text = String(meta && meta.textContent || '');
+    var match = text.match(/\b(\d{4}-\d{2}-\d{2})\b/);
+    return match ? match[1] : 'Без даты';
+  }
+  function prettyDate(iso){
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso;
+    try {
+      var d = new Date(iso + 'T00:00:00');
+      return d.toLocaleDateString('ru-RU', { day:'numeric', month:'long', year:'numeric' });
+    } catch(e) { return iso; }
+  }
+  function isPending(card){
+    var pill = card.querySelector('.ch89-stable-pill.pending');
+    return pill ? 1 : 0;
+  }
+  function groupStableReview(){
+    var area = $('reportsListArea');
+    if (!area || !area.classList.contains('ch89-stable-review-open')) return;
+    if (area.dataset.ch89V180Grouping === '1') return;
+    var cards = qsa(':scope > .ch89-stable-review-card[data-stable-card]', area);
+    if (!cards.length) return;
+    var rows = cards.map(function(card, index){ return { card:card, date:extractIso(card), pending:isPending(card), index:index }; });
+    rows.sort(function(a,b){
+      if (a.date !== b.date) return String(b.date).localeCompare(String(a.date));
+      if (a.pending !== b.pending) return b.pending - a.pending;
+      return a.index - b.index;
+    });
+    var signature = rows.map(function(x){ return (x.card.getAttribute('data-stable-card') || '') + '@' + x.date; }).join('|');
+    var existingDividers = qsa(':scope > .ch89-v180-date-divider', area);
+    if (area.dataset.ch89V180Signature === signature && existingDividers.length) return;
+    area.dataset.ch89V180Grouping = '1';
+    existingDividers.forEach(function(x){ x.remove(); });
+    var counts = {};
+    rows.forEach(function(x){ counts[x.date] = (counts[x.date] || 0) + 1; });
+    var current = null;
+    rows.forEach(function(x){
+      if (x.date !== current) {
+        current = x.date;
+        var divider = document.createElement('div');
+        divider.className = 'ch89-v180-date-divider';
+        divider.innerHTML = '<span>📅 ' + esc(prettyDate(current)) + '</span><small>' + counts[current] + ' ' + (counts[current] === 1 ? 'отчёт' : (counts[current] >= 2 && counts[current] <= 4 ? 'отчёта' : 'отчётов')) + '</small>';
+        area.appendChild(divider);
+      }
+      area.appendChild(x.card);
+    });
+    area.dataset.ch89V180Signature = signature;
+    setTimeout(function(){ area.dataset.ch89V180Grouping = '0'; }, 0);
+  }
+
+  function boot(){
+    makeLinkOptional();
+    hideLegacySenders();
+    groupStableReview();
+  }
+
+  /* Если старая кнопка успела появиться во время перерисовки, отправляем через стабильную форму без обязательной ссылки. */
+  document.addEventListener('click', function(e){
+    var old = e.target && e.target.closest && e.target.closest('#submitReportBtn,#submitReportBtnV16,#submitReportBtnV57,#submitReportBtnV62,#submitReportBtnV154');
+    if (!old) return;
+    e.preventDefault(); e.stopPropagation(); if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+    var stable = $('ch89StableSubmitReportBtn');
+    if (stable) stable.click();
+    return false;
+  }, true);
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+  [80,250,700,1500,3200,6500].forEach(function(ms){ setTimeout(boot, ms); });
+  try {
+    var timer;
+    new MutationObserver(function(){ clearTimeout(timer); timer=setTimeout(boot, 100); }).observe(document.documentElement, { childList:true, subtree:true });
+  } catch(e) {}
+  window.CH89_V180_REPORT_DATES_OPTIONAL_LINK = { boot:boot, group:groupStableReview, optional:makeLinkOptional };
+})();
+</script>
+<!-- === /CH89 V180 === -->
 
 </body>
 </html>
