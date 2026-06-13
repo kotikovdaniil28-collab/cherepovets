@@ -30302,5 +30302,255 @@ html[data-site-theme="creator"] .info-banner     { border-left-color: rgba(255,1
 </script>
 <!-- === /CH89 V174 === -->
 
+
+<!-- === CH89 V179: moderation actions AI review + stay in report review === -->
+<style id="ch89-v179-actions-style">
+  body:not(.ch89-action-access) #actionsTabBtn { display:none!important; visibility:hidden!important; pointer-events:none!important; }
+  body.ch89-action-access #actionsTabBtn { display:inline-flex!important; visibility:visible!important; pointer-events:auto!important; }
+  #mode-actions { display:none; gap:1rem; }
+  #mode-actions.ch89-actions-open { display:grid!important; }
+  .ch89-action-grid { display:grid; grid-template-columns:minmax(0,1.05fr) minmax(280px,.95fr); gap:1rem; align-items:start; }
+  .ch89-action-card { display:grid; gap:.82rem; min-width:0; padding:1rem; border-radius:18px; border:1px solid rgba(108,140,255,.27); background:linear-gradient(145deg,rgba(14,18,35,.92),rgba(7,10,20,.96)); box-shadow:0 15px 42px rgba(0,0,0,.25); }
+  .ch89-action-card h3 { margin:0; color:#fff; font-size:1.02rem; }
+  .ch89-action-help { color:var(--color-text-muted); font-size:.88rem; line-height:1.48; }
+  .ch89-action-note { padding:.78rem .85rem; border-radius:14px; border:1px solid rgba(255,191,71,.3); background:rgba(255,191,71,.075); color:#ffe4a6; font-size:.86rem; line-height:1.45; }
+  #ch89ActionFileInput { position:absolute!important; width:1px!important; height:1px!important; opacity:0!important; pointer-events:none!important; }
+  #ch89ActionPickBtn,#ch89ActionSubmitBtn,#ch89ActionRefreshMine,#ch89ActionRefreshReview { width:100%; justify-content:center; min-height:46px; }
+  #ch89ActionPickBtn { border-color:rgba(108,140,255,.62); color:#dce4ff; background:linear-gradient(135deg,rgba(75,102,210,.35),rgba(108,140,255,.22)); }
+  #ch89ActionPreview { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:.65rem; min-height:44px; }
+  .ch89-action-preview-card { position:relative; overflow:hidden; border-radius:14px; border:1px solid rgba(255,255,255,.14); background:rgba(0,0,0,.28); }
+  .ch89-action-preview-card img { display:block; width:100%; height:130px; object-fit:cover; }
+  .ch89-action-preview-card span { display:block; padding:.48rem; color:var(--color-text-muted); font-size:.76rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  #ch89ActionRemoveFile { position:absolute; top:.36rem; right:.36rem; width:29px; height:29px; border-radius:999px; border:1px solid rgba(255,255,255,.35); background:rgba(239,68,68,.94); color:#fff; font-weight:950; cursor:pointer; }
+  #ch89ActionLog { display:none; gap:.42rem; padding:.78rem; border-radius:14px; border:1px solid rgba(108,140,255,.22); background:rgba(0,0,0,.25); color:var(--color-text-muted); font-size:.84rem; line-height:1.42; }
+  #ch89ActionLog.open { display:grid; }
+  .ch89-action-log-line { display:grid; grid-template-columns:1.35rem minmax(0,1fr); gap:.42rem; }
+  .ch89-action-log-line.ok { color:#bfffd0; } .ch89-action-log-line.warn { color:#ffe2a3; } .ch89-action-log-line.bad { color:#ffd6df; }
+  #ch89ActionResult { min-height:1.2em; font-weight:900; text-align:center; overflow-wrap:anywhere; }
+  .ch89-action-list { display:grid; gap:.75rem; }
+  .ch89-action-row { display:grid; gap:.62rem; min-width:0; padding:.85rem; border-radius:15px; border:1px solid rgba(191,198,255,.17); background:rgba(0,0,0,.28); }
+  .ch89-action-row-head { display:flex; align-items:flex-start; justify-content:space-between; gap:.6rem; flex-wrap:wrap; }
+  .ch89-action-pill { display:inline-flex; align-items:center; width:max-content; max-width:100%; gap:.3rem; padding:.24rem .56rem; border-radius:999px; border:1px solid rgba(255,255,255,.16); color:var(--color-text-muted); background:rgba(255,255,255,.055); font-size:.76rem; font-weight:900; }
+  .ch89-action-pill.pending { color:#facc15; border-color:rgba(250,204,21,.42); background:rgba(250,204,21,.1); }
+  .ch89-action-pill.ok { color:#7fe8a0; border-color:rgba(127,232,160,.42); background:rgba(127,232,160,.1); }
+  .ch89-action-pill.bad { color:#ff9aad; border-color:rgba(255,107,136,.45); background:rgba(255,107,136,.1); }
+  .ch89-action-proof { max-width:100%; max-height:230px; object-fit:contain; border-radius:12px; border:1px solid rgba(255,255,255,.14); background:rgba(0,0,0,.24); cursor:zoom-in; }
+  .ch89-action-items { display:grid; gap:.38rem; color:var(--color-text-muted); font-size:.84rem; line-height:1.42; }
+  .ch89-action-item { padding:.44rem .55rem; border-radius:10px; background:rgba(108,140,255,.075); border:1px solid rgba(108,140,255,.17); }
+  .ch89-action-review-actions { display:grid; grid-template-columns:minmax(96px,.7fr) minmax(140px,1fr) minmax(110px,.8fr); gap:.5rem; align-items:center; }
+  .ch89-action-count { width:100%; min-height:42px; border-radius:12px; border:1px solid rgba(255,255,255,.18); background:#111827; color:#fff; padding:.6rem .7rem; font-weight:900; }
+  #ch89ActionLeaderPanel { display:none; }
+  body.ch89-action-leader #ch89ActionLeaderPanel { display:grid; }
+  @media(max-width:840px){ .ch89-action-grid{grid-template-columns:1fr}.ch89-action-review-actions{grid-template-columns:1fr}.ch89-action-proof{max-height:180px} }
+</style>
+<script id="ch89-v179-actions-script">
+(function(){
+  'use strict';
+  if (window.__CH89_V179_ACTIONS__) return;
+  window.__CH89_V179_ACTIONS__ = true;
+
+  var SUBMISSION_EMAIL = 'MOD_ACTION_SUBMISSION';
+  var XP_STATUS = 'Действия';
+  var SETTINGS_KEY = 'ch89_ai_reports_config_v171';
+  var LEGACY_KEY = 't73_deepseek_ai_config_v167';
+  var DEFAULT_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+  var DEFAULT_MODEL = 'gemini-2.5-flash';
+  var actionFile = null;
+  var previewUrl = '';
+  var submitBusy = false;
+
+  function $(id){ return document.getElementById(id); }
+  function qsa(sel,root){ return Array.prototype.slice.call((root||document).querySelectorAll(sel)); }
+  function esc(v){ return String(v==null?'':v).replace(/[&<>"']/g,function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];}); }
+  function lower(v){ return String(v||'').trim().toLowerCase(); }
+  function nowRu(){ try { return new Date().toLocaleString('ru-RU'); } catch(e){ return String(new Date()); } }
+  function id(prefix){ return prefix+'_'+Date.now()+'_'+Math.random().toString(16).slice(2); }
+  function client(){
+    try { if (typeof supa!=='undefined' && supa && typeof supa.from==='function') return supa; } catch(e){}
+    var keys=['supa','__T73_SUPA','t73Supa','supabaseClient','__CH89_STABLE_SUPA'];
+    for(var i=0;i<keys.length;i++){ var c=window[keys[i]]; if(c&&typeof c.from==='function') return c; }
+    return null;
+  }
+  async function authUser(){
+    try { if(window.currentUser&&(window.currentUser.id||window.currentUser.email)) return window.currentUser; } catch(e){}
+    try { if(typeof currentUser!=='undefined'&&currentUser&&(currentUser.id||currentUser.email)) return currentUser; } catch(e){}
+    var c=client(); if(!c||!c.auth) return null;
+    try { var a=await c.auth.getUser(); if(a&&a.data&&a.data.user){ window.currentUser=a.data.user; return a.data.user; } } catch(e){}
+    try { var b=await c.auth.getSession(); var u=b&&b.data&&b.data.session&&b.data.session.user; if(u){ window.currentUser=u; return u; } } catch(e){}
+    return null;
+  }
+  function creator(){ try { return lower(typeof creatorEmail!=='undefined'?creatorEmail:'daniiltimosin72@gmail.com'); } catch(e){ return 'daniiltimosin72@gmail.com'; } }
+  function arr(name){ try { if(Array.isArray(window[name])) return window[name]; } catch(e){} try { return eval('typeof '+name+'!=="undefined"&&Array.isArray('+name+')?'+name+':[]'); } catch(e){ return []; } }
+  function fastAccess(){
+    try { if(document.body.classList.contains('ch89-report-mod-access')||document.body.classList.contains('t73-v94-mod-access')||document.body.classList.contains('ch89-action-access')) return true; } catch(e){}
+    try { if(typeof isModerator!=='undefined'&&isModerator) return true; } catch(e){}
+    return fastLeader();
+  }
+  function fastLeader(){
+    var u=null; try { u=window.currentUser||(typeof currentUser!=='undefined'?currentUser:null); } catch(e){}
+    var email=lower(u&&u.email), uid=String(u&&(u.id||u.user_id)||'');
+    return !!(email&&(email===creator()||arr('adminEmails').map(lower).indexOf(email)!==-1)||uid&&arr('dynamicModLeaders').map(String).indexOf(uid)!==-1||document.body.classList.contains('ch89-report-leader-on')||document.body.classList.contains('t73-v94-mod-leader')||document.body.classList.contains('t73-v132-mod-leader'));
+  }
+  async function roleState(){
+    var u=await authUser(), state={user:u,mod:false,leader:false}; if(!u) return state;
+    var email=lower(u.email), uid=String(u.id||u.user_id||'');
+    if(email===creator()){ state.mod=true; state.leader=true; return state; }
+    if(arr('adminEmails').map(lower).indexOf(email)!==-1||arr('dynamicModLeaders').map(String).indexOf(uid)!==-1) state.leader=true;
+    try { if(typeof isModerator!=='undefined'&&isModerator) state.mod=true; } catch(e){}
+    var c=client(); if(c){
+      try {
+        var keys=[uid,u.email].filter(Boolean); var r=await c.from('reports').select('email,status,link').in('email',['USER_ROLE','ADMIN_ROLE']).in('link',keys).limit(500);
+        (r.data||[]).forEach(function(row){ var st=lower(row.status); if(row.email==='USER_ROLE'&&(st==='moderator'||st==='mod'||st==='модератор')) state.mod=true; if(row.email==='ADMIN_ROLE'&&(st.indexOf('руковод')!==-1||st.indexOf('lead')!==-1||st.indexOf('admin')!==-1||st==='moderation'||st==='mod_admin')) state.leader=true; });
+      } catch(e){}
+    }
+    if(state.leader) state.mod=true; return state;
+  }
+  async function refreshAccess(){
+    var r=await roleState(); document.body.classList.toggle('ch89-action-access',!!r.mod); document.body.classList.toggle('ch89-action-leader',!!r.leader);
+    var tab=$('actionsTabBtn'); if(tab) tab.style.setProperty('display',r.mod?'inline-flex':'none','important');
+    var panel=$('ch89ActionLeaderPanel'); if(panel) panel.style.display=r.leader?'grid':'none';
+    return r;
+  }
+
+  function insertUi(){
+    var nav=$('subNavModeration');
+    if(nav&&!$('actionsTabBtn')){
+      var report=$('reportTabBtn'); var html='<button class="mode-btn" data-mode="actions" type="button" id="actionsTabBtn" style="display:none;">⚡ Действия</button>';
+      if(report) report.insertAdjacentHTML('afterend',html); else nav.insertAdjacentHTML('beforeend',html);
+    }
+    var game=$('game'); if(game&&!$('mode-actions')){
+      var htmlSec='<section class="panel game-card fade-in" id="mode-actions" style="display:none;">'+
+      '<div class="section-head"><h2 style="color:#8aa3ff;">Действия модератора</h2><p>Загрузите скриншот из логов модерации. AI строго засчитает только выданные наказания и смены ников. Одно подтверждённое действие = 10 XP.</p></div>'+
+      '<div class="ch89-action-grid"><article class="ch89-action-card"><h3>📎 Сдать действия за смену</h3><div class="ch89-action-note"><b>Засчитывается:</b> выдача наказания и смена ника. <b>Не засчитывается:</b> удаление сообщений, назначения на должности, снятие должностей и любые непонятные или повторяющиеся записи.</div><div class="admin-field"><label>Ваш NickName:</label><input id="ch89ActionNick" class="support-input" type="text" placeholder="Введите игровой ник"></div><div class="admin-field"><label>Комментарий (необязательно):</label><textarea id="ch89ActionComment" class="support-input" rows="3" placeholder="Например: логи за вечернюю смену"></textarea></div><input id="ch89ActionFileInput" type="file" accept="image/*,.png,.jpg,.jpeg,.webp"><button id="ch89ActionPickBtn" class="btn btn-secondary" type="button">📸 Загрузить скриншот логов</button><div id="ch89ActionPhotoCount" class="ch89-action-help">Фото не выбрано</div><div id="ch89ActionPreview"><div class="ch89-action-help">После выбора файла здесь появится предпросмотр.</div></div><button id="ch89ActionSubmitBtn" class="btn btn-primary" type="button">Проверить AI и отправить</button><div id="ch89ActionLog"></div><div id="ch89ActionResult"></div></article>'+
+      '<article class="ch89-action-card"><h3>🧾 Мои последние сдачи</h3><div class="ch89-action-help">XP появится после подтверждения руководством. Итог всегда считается по формуле: количество засчитанных действий × 10.</div><button id="ch89ActionRefreshMine" class="btn btn-secondary" type="button">🔄 Обновить мои сдачи</button><div id="ch89ActionMineList" class="ch89-action-list"><div class="ch89-action-help">Откройте раздел или нажмите «Обновить».</div></div></article></div>'+
+      '<article class="ch89-action-card" id="ch89ActionLeaderPanel"><h3>🛡️ Проверка действий руководством</h3><div class="ch89-action-help">AI уже отфильтровал записи. Руководство подтверждает количество либо отклоняет сдачу. После подтверждения создаётся отдельное начисление реального XP.</div><button id="ch89ActionRefreshReview" class="btn btn-secondary" type="button">🔄 Обновить очередь проверки</button><div id="ch89ActionReviewList" class="ch89-action-list"><div class="ch89-action-help">Нажмите «Обновить очередь проверки».</div></div></article></section>';
+      var after=$('mode-report'); if(after) after.insertAdjacentHTML('afterend',htmlSec); else game.insertAdjacentHTML('beforeend',htmlSec);
+    }
+  }
+  function hideAllModes(){ qsa('[id^="mode-"]').forEach(function(sec){ if(sec.id!=='mode-instructia') sec.style.setProperty('display','none','important'); }); }
+  async function openActions(){
+    insertUi(); var roles=await refreshAccess(); if(!roles.mod){ alert('Раздел «Действия» доступен только модерации и руководству.'); return; }
+    try { document.body.classList.remove('t73-route-instructia'); } catch(e){}
+    var game=$('game'); if(game) game.style.setProperty('display','grid','important'); hideAllModes();
+    var sec=$('mode-actions'); if(sec){ sec.classList.add('ch89-actions-open'); sec.style.setProperty('display','grid','important'); }
+    qsa('.mode-btn').forEach(function(b){ b.classList.remove('active'); }); var tab=$('actionsTabBtn'); if(tab) tab.classList.add('active');
+    document.documentElement.setAttribute('data-site-theme','report');
+    var hero=$('heroTitle'), text=$('heroText'), badge=$('heroBadge2'); if(hero) hero.innerHTML='Подтверждай <span>действия</span> по логам.'; if(text) text.textContent='AI засчитывает только наказания и смены ников. За каждое подтверждённое действие начисляется 10 XP.'; if(badge) badge.textContent='⚡ Режим: действия модератора';
+    renderPreview(); await loadMine(); if(roles.leader) await loadReview();
+  }
+  function closeActions(){ var sec=$('mode-actions'); if(sec){ sec.classList.remove('ch89-actions-open'); sec.style.setProperty('display','none','important'); } }
+
+  function clearPreview(){ if(previewUrl){ try{URL.revokeObjectURL(previewUrl);}catch(e){} previewUrl=''; } actionFile=null; var input=$('ch89ActionFileInput'); if(input) try{input.value='';}catch(e){} renderPreview(); }
+  function isImage(file){ return !!file&&(/^image\//i.test(String(file.type||''))||/\.(png|jpe?g|webp)$/i.test(String(file.name||''))); }
+  function renderPreview(){
+    var box=$('ch89ActionPreview'), count=$('ch89ActionPhotoCount'); if(count) count.textContent=actionFile?('Выбран файл: '+(actionFile.name||'скриншот')):'Фото не выбрано'; if(!box) return;
+    if(!actionFile){ box.innerHTML='<div class="ch89-action-help">После выбора файла здесь появится предпросмотр.</div>'; return; }
+    if(!previewUrl){ try{ previewUrl=URL.createObjectURL(actionFile); } catch(e){ previewUrl=''; } }
+    box.innerHTML='<div class="ch89-action-preview-card"><button id="ch89ActionRemoveFile" type="button">×</button>'+(previewUrl?'<img src="'+esc(previewUrl)+'" alt="Скриншот логов">':'<div class="ch89-action-help" style="padding:.7rem">Предпросмотр недоступен, но файл выбран.</div>')+'<span>'+esc(actionFile.name||'скриншот')+'</span></div>';
+  }
+  function setResult(text,ok){ var el=$('ch89ActionResult'); if(el){ el.textContent=text||''; el.style.color=ok?'var(--color-success)':'var(--color-error)'; } }
+  function logReset(){ var el=$('ch89ActionLog'); if(el){ el.classList.add('open'); el.innerHTML=''; } }
+  function log(icon,text,type){ var el=$('ch89ActionLog'); if(!el)return; var line=document.createElement('div'); line.className='ch89-action-log-line '+(type||''); line.innerHTML='<span>'+esc(icon||'•')+'</span><span>'+esc(text||'')+'</span>'; el.appendChild(line); }
+  function fileData(file){ return new Promise(function(resolve,reject){ var r=new FileReader(); r.onload=function(){resolve(String(r.result||''));}; r.onerror=function(){reject(r.error||new Error('Не удалось прочитать файл.'));}; r.readAsDataURL(file); }); }
+  function loadImg(url){ return new Promise(function(resolve,reject){ var img=new Image(); img.onload=function(){resolve(img);}; img.onerror=function(){reject(new Error('Скриншот не удалось открыть. Используйте JPG, PNG или WebP.'));}; img.src=url; }); }
+  async function compress(file){ var raw=await fileData(file), img=await loadImg(raw), max=1200, w=img.naturalWidth||img.width, h=img.naturalHeight||img.height, canvas=document.createElement('canvas'); function draw(side,q){ var ratio=Math.min(1,side/Math.max(w,h)); canvas.width=Math.max(1,Math.round(w*ratio)); canvas.height=Math.max(1,Math.round(h*ratio)); var ctx=canvas.getContext('2d',{alpha:false}); ctx.fillStyle='#111'; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.drawImage(img,0,0,canvas.width,canvas.height); return canvas.toDataURL('image/jpeg',q); } var out=draw(max,.7), q=.7; while(out.length>520000&&q>.42){q-=.07;out=draw(max,q);} while(out.length>520000&&max>620){max-=140;out=draw(max,.44);} if(out.length>720000) throw new Error('Скриншот слишком большой. Обрежьте лишнюю часть и попробуйте снова.'); return out; }
+  function readLocal(k){ try{return JSON.parse(localStorage.getItem(k)||'{}')||{};}catch(e){return{};} }
+  function normalizeCfg(cfg){ cfg=cfg||{}; var key=String(cfg.apiKey||cfg.key||'').trim(), endpoint=String(cfg.endpoint||'').trim(), model=String(cfg.model||'').trim(); if(/^AIza[0-9A-Za-z_-]{20,}/.test(key)&&(!endpoint||/deepseek|chat\/completions/i.test(endpoint))){ endpoint=DEFAULT_ENDPOINT; model=DEFAULT_MODEL; } if(!endpoint)endpoint=DEFAULT_ENDPOINT; if(!model)model=DEFAULT_MODEL; return {apiKey:key,endpoint:endpoint,model:model}; }
+  async function config(){ try{ if(window.CH89_V171_AI_CONFIG&&typeof window.CH89_V171_AI_CONFIG.getReports==='function'){ var c=await window.CH89_V171_AI_CONFIG.getReports(); if(c&&c.apiKey)return normalizeCfg(c); } }catch(e){} var a=readLocal(SETTINGS_KEY); return normalizeCfg(a.apiKey?a:readLocal(LEGACY_KEY)); }
+  function mime(url){ var m=String(url||'').match(/^data:([^;]+);base64,/i); return m?m[1]:'image/jpeg'; }
+  function b64(url){ return String(url||'').replace(/^data:[^,]+,/i,''); }
+  function parseJson(text){ var s=String(text||'').trim().replace(/^```(?:json)?/i,'').replace(/```$/i,'').trim(); try{return JSON.parse(s);}catch(e){var m=s.match(/\{[\s\S]*\}/);if(m)return JSON.parse(m[0]);throw new Error('AI вернул ответ не в формате JSON.');} }
+  function normalizeType(type,detail){ var s=lower(type+' '+detail); if(/смен|ник|nickname|nick/.test(s))return'Смена ника'; if(/наказ|мут|mute|бан|ban|warn|пред|kick|кик|jail|деморган|блок|blacklist|чс/.test(s))return'Наказание'; return''; }
+  function sanitize(raw){
+    raw=raw||{}; var arrItems=Array.isArray(raw.items)?raw.items:Array.isArray(raw.actions)?raw.actions:[]; var items=[];
+    arrItems.forEach(function(it){ if(typeof it==='string')it={details:it}; it=it||{}; var details=String(it.details||it.text||it.description||it.reason||'').trim(), rawText=lower((it.type||it.kind||'')+' '+details); if(/должност|роль|удален[^ ]* сообщ|удалени[^ ]* сообщ|message delete/.test(rawText))return; var type=normalizeType(it.type||it.kind||'',details), uniq=type+'|'+lower(details); if(type&&!items.some(function(x){return x.__uniq===uniq;}))items.push({type:type,details:details||type,__uniq:uniq}); });
+    var count=items.length; if(!count&&!Array.isArray(raw.items)&&!Array.isArray(raw.actions)){ count=Math.max(0,Math.min(100,parseInt(raw.validActions||raw.count||0,10)||0)); }
+    var ignored=Array.isArray(raw.ignored)?raw.ignored:Array.isArray(raw.rejected)?raw.rejected:[];
+    items.forEach(function(x){delete x.__uniq;}); return { validActions:count, xp:count*10, items:items, ignored:ignored.map(function(x){return String(typeof x==='string'?x:(x&&x.details)||JSON.stringify(x));}).slice(0,20), reason:String(raw.reason||raw.summary||'AI применил строгую фильтрацию: засчитаны только наказания и смены ников.').trim(), confidence:String(raw.confidence||'').trim() };
+  }
+  async function actionInstruction(){ var base=''; try{ if(window.CH89_V172_REPORT_INSTRUCTION&&typeof window.CH89_V172_REPORT_INSTRUCTION.load==='function')base=String(await window.CH89_V172_REPORT_INSTRUCTION.load()||''); }catch(e){} return base+'\n\nОТДЕЛЬНАЯ СТРОГАЯ ПРОВЕРКА ДЕЙСТВИЙ МОДЕРАТОРА. На скриншоте находятся карточки логов Discord. Засчитывай только: (1) выданные наказания пользователям; (2) смену ника пользователя. Не засчитывай: назначения или снятия должностей, удаление сообщений, обычные сообщения, дубликаты, обрезанные и непонятные записи. Не додумывай скрытые действия. Каждая отдельная видимая карточка может дать максимум одно действие. Верни только JSON: {"validActions": число, "items":[{"type":"Наказание или Смена ника","details":"краткое описание видимой карточки"}],"ignored":["что отброшено и почему"],"reason":"краткий итог","confidence":"high|medium|low"}.'; }
+  async function judge(dataUrl){
+    var cfg=await config(); if(!cfg.apiKey) throw new Error('API для AI-проверки не настроен. Создателю нужно сохранить ключ проверки отчётов в панели управления.');
+    var instruction=await actionInstruction(); var prompt=instruction+'\n\nПроверь приложенный скриншот логов модерации строго по правилам.'; var endpoint=String(cfg.endpoint||'');
+    if(/googleapis\.com/i.test(endpoint)||/generativelanguage/i.test(endpoint)){
+      if(endpoint.indexOf('{model}')!==-1)endpoint=endpoint.replace('{model}',encodeURIComponent(cfg.model||DEFAULT_MODEL)); if(endpoint.indexOf('key=')===-1)endpoint+=(endpoint.indexOf('?')===-1?'?':'&')+'key='+encodeURIComponent(cfg.apiKey);
+      var gr=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt},{inline_data:{mime_type:mime(dataUrl),data:b64(dataUrl)}}]}],generationConfig:{temperature:.02,maxOutputTokens:1100,response_mime_type:'application/json'}})});
+      var gd=await gr.json().catch(function(){return{};}); if(!gr.ok)throw new Error((gd.error&&gd.error.message)||('AI API ответил '+gr.status)); var txt=((gd.candidates||[])[0]&&gd.candidates[0].content&&gd.candidates[0].content.parts||[]).map(function(p){return p.text||'';}).join('\n'); return sanitize(parseJson(txt));
+    }
+    var or=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+cfg.apiKey},body:JSON.stringify({model:cfg.model,messages:[{role:'system',content:instruction},{role:'user',content:[{type:'text',text:'Проверь приложенный скриншот логов модерации строго по правилам и верни только JSON.'},{type:'image_url',image_url:{url:dataUrl}}]}],temperature:.02,max_tokens:1100,response_format:{type:'json_object'}})});
+    var od=await or.json().catch(function(){return{};}); if(!or.ok)throw new Error((od.error&&od.error.message)||('AI API ответил '+or.status)); var content=od.choices&&od.choices[0]&&od.choices[0].message&&od.choices[0].message.content; return sanitize(parseJson(content));
+  }
+  function dataBlob(dataUrl){ var p=String(dataUrl||'').split(','), raw=atob(p[1]||''), mimeType=(p[0].match(/data:([^;]+)/)||[,'image/jpeg'])[1], arr=new Uint8Array(raw.length); for(var i=0;i<raw.length;i++)arr[i]=raw.charCodeAt(i); return new Blob([arr],{type:mimeType}); }
+  async function uploadProof(c,file,dataUrl,u){
+    if(!c||!c.storage)return{url:dataUrl,source:'embedded'}; var buckets=['report-screenshots','reports','screenshots','report-proofs'], blob=dataBlob(dataUrl), owner=String((u&&(u.id||u.email))||'user').replace(/[^a-zA-Z0-9_.@-]+/g,'_').slice(0,80), path='actions/'+owner+'/'+Date.now()+'_'+Math.random().toString(16).slice(2)+'.jpg';
+    for(var i=0;i<buckets.length;i++){ try{ var up=await c.storage.from(buckets[i]).upload(path,blob,{cacheControl:'3600',upsert:true,contentType:'image/jpeg'}); if(!up.error){ var pub=c.storage.from(buckets[i]).getPublicUrl(path), url=pub&&pub.data&&pub.data.publicUrl||''; if(url)return{url:url,source:'storage',bucket:buckets[i],path:path}; } }catch(e){} }
+    return{url:dataUrl,source:'embedded'};
+  }
+  function parsePayload(row){ try{return JSON.parse(String(row&&row.date||'{}'))||{};}catch(e){return{};} }
+  function proof(payload){ return String(payload&&payload.proofUrl||payload&&payload.proof&&payload.proof.url||''); }
+  function statusClass(status){ status=String(status||''); if(status==='У Руководства')return'pending'; if(status==='Засчитано')return'ok'; if(status==='Не засчитано'||status==='Отказано')return'bad'; return''; }
+  function imgHtml(url){ if(!url)return'<div class="ch89-action-help">Скриншот не сохранён.</div>'; if(/^data:image/i.test(url)||/\.(png|jpe?g|webp)(?:\?|#|$)/i.test(url))return'<img class="ch89-action-proof" src="'+esc(url)+'" alt="Скриншот действий" data-ch89-action-zoom="1">'; return'<a class="btn btn-secondary" href="'+esc(url)+'" target="_blank" rel="noreferrer">📎 Открыть доказательство</a>'; }
+  function itemsHtml(p){ var items=p.actionAi&&Array.isArray(p.actionAi.items)?p.actionAi.items:[]; if(!items.length)return'<div class="ch89-action-help">AI не нашёл подтверждённых действий.</div>'; return'<div class="ch89-action-items">'+items.map(function(it,i){return'<div class="ch89-action-item"><b>'+(i+1)+'. '+esc(it.type||'Действие')+'</b><br>'+esc(it.details||'')+'</div>';}).join('')+'</div>'; }
+  function mineRow(row){ var p=parsePayload(row), a=p.actionAi||{}, count=Number(p.finalCount!=null?p.finalCount:a.validActions||0), xp=Number(p.finalXp!=null?p.finalXp:count*10), st=String(row.status||'У Руководства'); return'<div class="ch89-action-row"><div class="ch89-action-row-head"><div><b style="color:#fff">'+esc(p.actorNickname||'Модератор')+'</b><div class="ch89-action-help">'+esc(p.submittedAtRu||'')+'</div></div><span class="ch89-action-pill '+statusClass(st)+'">'+esc(st)+' · '+xp+' XP</span></div><div class="ch89-action-help">AI нашёл: <b>'+count+'</b> действ. × 10 XP</div>'+itemsHtml(p)+imgHtml(proof(p))+'</div>'; }
+  async function loadMine(){ var c=client(),u=await authUser(),list=$('ch89ActionMineList'); if(!list)return; if(!c||!u){list.innerHTML='<div class="ch89-action-help">Войдите в аккаунт.</div>';return;} list.innerHTML='<div class="ch89-action-help">Загружаю...</div>'; try{ var r=await c.from('reports').select('*').eq('email',SUBMISSION_EMAIL).eq('link',String(u.id||u.email||'')).order('id',{ascending:false}).limit(25); if(r.error)throw r.error; list.innerHTML=(r.data||[]).length?(r.data||[]).map(mineRow).join(''):'<div class="ch89-action-help">Сдач действий пока нет.</div>'; }catch(e){list.innerHTML='<div class="ch89-action-help" style="color:var(--color-error)">Ошибка загрузки: '+esc(e.message||e)+'</div>';} }
+  function reviewRow(row){ var p=parsePayload(row),a=p.actionAi||{},count=Number(a.validActions||0),xp=count*10, pending=String(row.status||'')==='У Руководства'; var actions=pending?'<div class="ch89-action-review-actions"><input class="ch89-action-count" type="number" min="0" max="100" step="1" value="'+count+'" data-action-count="'+esc(row.id)+'"><button class="btn btn-secondary" style="border-color:#52c77b;color:#7fe8a0" type="button" data-action-approve="'+esc(row.id)+'">Выдать '+xp+' XP</button><button class="btn btn-secondary" style="border-color:var(--color-error);color:var(--color-error)" type="button" data-action-reject="'+esc(row.id)+'">Отказать</button></div>':'<div class="ch89-action-help">Решение сохранено: '+esc(row.status||'')+' · '+Number(p.finalXp||0)+' XP.</div>'; return'<div class="ch89-action-row" data-action-review-card="'+esc(row.id)+'"><div class="ch89-action-row-head"><div><b style="color:#fff">'+esc(p.actorNickname||p.actorEmail||'Модератор')+'</b><div class="ch89-action-help">'+esc(p.actorEmail||'')+' · '+esc(p.submittedAtRu||'')+'</div></div><span class="ch89-action-pill '+statusClass(row.status)+'">'+esc(row.status||'')+'</span></div><div class="ch89-action-note">AI: <b>'+count+'</b> действий × 10 XP = <b>'+xp+' XP</b><br>'+esc(a.reason||'')+'</div>'+itemsHtml(p)+imgHtml(proof(p))+actions+'</div>'; }
+  async function loadReview(){ var roles=await refreshAccess(),list=$('ch89ActionReviewList'); if(!list)return; if(!roles.leader){list.innerHTML='<div class="ch89-action-help">Доступно только руководству.</div>';return;} var c=client(); if(!c)return; list.innerHTML='<div class="ch89-action-help">Загружаю очередь...</div>'; try{var r=await c.from('reports').select('*').eq('email',SUBMISSION_EMAIL).order('id',{ascending:false}).limit(100);if(r.error)throw r.error;var rows=r.data||[];rows.sort(function(a,b){return (a.status==='У Руководства'?0:1)-(b.status==='У Руководства'?0:1)||String(b.id).localeCompare(String(a.id));});list.innerHTML=rows.length?rows.map(reviewRow).join(''):'<div class="ch89-action-help">Очередь пустая.</div>'; }catch(e){list.innerHTML='<div class="ch89-action-help" style="color:var(--color-error)">Ошибка: '+esc(e.message||e)+'</div>';} }
+  async function saveSubmission(){
+    if(submitBusy)return; var c=client(),u=await authUser(),btn=$('ch89ActionSubmitBtn'), nick=String(($('ch89ActionNick')&&$('ch89ActionNick').value)||'').trim(), comment=String(($('ch89ActionComment')&&$('ch89ActionComment').value)||'').trim(); if(!c||!u)return setResult('Сначала войдите в аккаунт.',false); if(!nick)return setResult('Введите игровой ник.',false); if(!actionFile)return setResult('Загрузите скриншот логов модерации.',false);
+    submitBusy=true; var old=btn&&btn.textContent; if(btn){btn.disabled=true;btn.textContent='AI проверяет скриншот...';} logReset(); setResult('Идёт строгая AI-проверка...',true);
+    try{ log('📎','Скриншот принят. Сжимаю изображение.','ok'); var data=await compress(actionFile); log('🧠','AI ищет только наказания и смены ников.','warn'); var verdict=await judge(data); log('✅','Найдено подтверждённых действий: '+verdict.validActions+'. Начисление после решения руководства: '+verdict.xp+' XP.','ok'); var uploaded=await uploadProof(c,actionFile,data,u); var payload={version:'ch89_actions_v179',actorUserId:String(u.id||u.user_id||''),actorEmail:String(u.email||''),actorNickname:nick,comment:comment,submittedAtRu:nowRu(),actionAi:verdict,proofUrl:uploaded.url||'',proof:uploaded,finalStatus:'У Руководства'}; var row={id:id('modaction'),email:SUBMISSION_EMAIL,link:String(u.id||u.email||''),status:'У Руководства',date:JSON.stringify(payload),xp:0}; var ins=await c.from('reports').insert([row]); if(ins.error)throw ins.error; setResult('Готово. AI насчитал '+verdict.validActions+' действий ('+verdict.xp+' XP). Сдача отправлена руководству.',true); clearPreview(); if($('ch89ActionComment'))$('ch89ActionComment').value=''; await loadMine(); if(fastLeader())await loadReview(); }
+    catch(e){log('⛔',String(e.message||e),'bad');setResult('Ошибка: '+String(e.message||e),false);} finally{submitBusy=false;if(btn){btn.disabled=false;btn.textContent=old||'Проверить AI и отправить';}}
+  }
+  async function decide(submissionId,approve){
+    var roles=await refreshAccess(); if(!roles.leader)return alert('Проверять действия может только руководство.'); var c=client(),u=await authUser(); if(!c||!u)return; try{var got=await c.from('reports').select('*').eq('id',submissionId).maybeSingle();if(got.error)throw got.error;var row=got.data;if(!row)throw new Error('Сдача не найдена.');var p=parsePayload(row);if(lower(p.actorEmail)===lower(u.email))return alert('Нельзя проверять свои собственные действия.'); var grantId='actxp_'+submissionId; if(!approve){p.finalStatus='Не засчитано';p.finalCount=0;p.finalXp=0;p.checkedAtRu=nowRu();p.checkedBy=String(u.email||u.id||'');await c.from('reports').delete().eq('id',grantId);var rej=await c.from('reports').update({status:'Не засчитано',xp:0,date:JSON.stringify(p)}).eq('id',submissionId);if(rej.error)throw rej.error;}else{var card=document.querySelector('[data-action-review-card="'+(window.CSS&&CSS.escape?CSS.escape(submissionId):submissionId.replace(/"/g,'\\"'))+'"]'),input=card&&card.querySelector('[data-action-count]'),count=Math.max(0,Math.min(100,parseInt(input&&input.value,10)||0)),xp=count*10;p.finalStatus='Засчитано';p.finalCount=count;p.finalXp=xp;p.checkedAtRu=nowRu();p.checkedBy=String(u.email||u.id||'');var upd=await c.from('reports').update({status:'Засчитано',xp:0,date:JSON.stringify(p)}).eq('id',submissionId);if(upd.error)throw upd.error;var grant={id:grantId,email:String(p.actorEmail||''),link:'MOD_ACTION_XP:'+submissionId,status:XP_STATUS,date:'Действия модерации: '+count+' × 10 XP = '+xp+' XP · проверил '+String(u.email||u.id||'')+' · '+nowRu(),xp:xp};var gr=await c.from('reports').upsert([grant],{onConflict:'id'});if(gr.error)throw gr.error;} await loadReview(); await loadMine(); try{if(typeof updateShopStats==='function')updateShopStats();}catch(e){} alert(approve?'Действия подтверждены. XP начислен.':'Сдача действий отклонена.');}catch(e){alert('Ошибка сохранения решения: '+String(e.message||e));}
+  }
+  function updateApproveCaptions(){ qsa('[data-action-review-card]').forEach(function(card){var input=card.querySelector('[data-action-count]'),btn=card.querySelector('[data-action-approve]');if(input&&btn)btn.textContent='Выдать '+(Math.max(0,parseInt(input.value,10)||0)*10)+' XP';}); }
+
+  function bindEvents(){
+    document.addEventListener('click',function(e){
+      var tab=e.target&&e.target.closest&&e.target.closest('#actionsTabBtn'); if(tab){e.preventDefault();e.stopPropagation();if(e.stopImmediatePropagation)e.stopImmediatePropagation();openActions();return false;}
+      var mode=e.target&&e.target.closest&&e.target.closest('.mode-btn[data-mode]'); if(mode&&mode.id!=='actionsTabBtn')closeActions(); var main=e.target&&e.target.closest&&e.target.closest('.main-cat-btn'); if(main)closeActions();
+      var pick=e.target&&e.target.closest&&e.target.closest('#ch89ActionPickBtn'); if(pick){e.preventDefault();var input=$('ch89ActionFileInput');if(input)input.click();return;}
+      if(e.target&&e.target.closest&&e.target.closest('#ch89ActionRemoveFile')){e.preventDefault();clearPreview();return;}
+      if(e.target&&e.target.closest&&e.target.closest('#ch89ActionSubmitBtn')){e.preventDefault();saveSubmission();return;}
+      if(e.target&&e.target.closest&&e.target.closest('#ch89ActionRefreshMine')){e.preventDefault();loadMine();return;}
+      if(e.target&&e.target.closest&&e.target.closest('#ch89ActionRefreshReview')){e.preventDefault();loadReview();return;}
+      var approve=e.target&&e.target.closest&&e.target.closest('[data-action-approve]'); if(approve){e.preventDefault();decide(approve.getAttribute('data-action-approve'),true);return;}
+      var reject=e.target&&e.target.closest&&e.target.closest('[data-action-reject]'); if(reject){e.preventDefault();decide(reject.getAttribute('data-action-reject'),false);return;}
+      var zoom=e.target&&e.target.closest&&e.target.closest('[data-ch89-action-zoom]'); if(zoom&&$('imageModal')&&$('imageModalSrc')){$('imageModal').style.display='flex';$('imageModalSrc').src=zoom.src;}
+    },true);
+    document.addEventListener('change',function(e){if(e.target&&e.target.id==='ch89ActionFileInput'){var f=e.target.files&&e.target.files[0];if(!isImage(f)){clearPreview();setResult('Используйте JPG, PNG или WebP.',false);return;}if(previewUrl){try{URL.revokeObjectURL(previewUrl);}catch(err){}previewUrl='';}actionFile=f;renderPreview();setResult('Скриншот выбран. Нажмите «Проверить AI и отправить».',true);}if(e.target&&e.target.matches&&e.target.matches('[data-action-count]'))updateApproveCaptions();},true);
+    document.addEventListener('input',function(e){if(e.target&&e.target.matches&&e.target.matches('[data-action-count]'))updateApproveCaptions();},true);
+  }
+
+  function boot(){ insertUi(); refreshAccess(); renderPreview(); }
+  bindEvents(); if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot(); [350,1000,2200,5000,9000].forEach(function(ms){setTimeout(boot,ms);});
+  try{new MutationObserver(function(){clearTimeout(window.__CH89_V179_ACTIONS_TIMER__);window.__CH89_V179_ACTIONS_TIMER__=setTimeout(boot,160);}).observe(document.documentElement,{childList:true,subtree:true});}catch(e){}
+  try{var c=client();if(c&&c.auth&&c.auth.onAuthStateChange)c.auth.onAuthStateChange(function(){setTimeout(refreshAccess,250);});}catch(e){}
+  window.CH89_V179_ACTIONS={open:openActions,mine:loadMine,review:loadReview,refresh:refreshAccess};
+})();
+</script>
+
+<style id="ch89-v179-report-stay-style">
+  body.ch89-report-review-lock #mode-reports_table { display:none!important; visibility:hidden!important; pointer-events:none!important; }
+</style>
+<script id="ch89-v179-report-stay-script">
+(function(){
+  'use strict';
+  if(window.__CH89_V179_REPORT_STAY__)return; window.__CH89_V179_REPORT_STAY__=true;
+  function $(id){return document.getElementById(id);} function visible(el){return !!el&&getComputedStyle(el).display!=='none';}
+  function tableIntent(){var sec=$('mode-reports_table'),btn=$('reportsTableBtn');return !!(visible(sec)&&btn&&btn.classList.contains('active')&&document.documentElement.getAttribute('data-site-theme')==='reports_table');}
+  function stay(){var rep=$('mode-report'),table=$('mode-reports_table'),btn=$('reportTabBtn');document.body.classList.add('ch89-report-review-lock');if(table)table.style.setProperty('display','none','important');if(rep){rep.style.setProperty('display','grid','important');rep.style.setProperty('visibility','visible','important');}document.querySelectorAll('.mode-btn').forEach(function(b){b.classList.remove('active');});if(btn)btn.classList.add('active');document.documentElement.setAttribute('data-site-theme','report');setTimeout(function(){document.body.classList.remove('ch89-report-review-lock');if(table)table.style.setProperty('display','none','important');},650);}
+  function wrap(){
+    if(typeof window.loadReportsTable==='function'&&!window.loadReportsTable.__ch89V179Guard){var old=window.loadReportsTable;var guarded=function(){if(!tableIntent())return Promise.resolve();return old.apply(this,arguments);};guarded.__ch89V179Guard=true;window.loadReportsTable=guarded;try{loadReportsTable=guarded;}catch(e){}}
+    if(window.T73_V94_REPORTS&&typeof window.T73_V94_REPORTS.load==='function'&&!window.T73_V94_REPORTS.load.__ch89V179Guard){var old2=window.T73_V94_REPORTS.load;var guarded2=function(){if(!tableIntent())return Promise.resolve();return old2.apply(this,arguments);};guarded2.__ch89V179Guard=true;window.T73_V94_REPORTS.load=guarded2;}
+  }
+  document.addEventListener('click',function(e){var t=e.target&&e.target.closest&&e.target.closest('[data-stable-issue-xp],[data-stable-reject]');if(!t)return;[70,220,480,900].forEach(function(ms){setTimeout(stay,ms);});},true);
+  function boot(){wrap();}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();[100,500,1300,3000,6500].forEach(function(ms){setTimeout(boot,ms);});
+})();
+</script>
+<!-- === /CH89 V179 === -->
+
 </body>
 </html>
